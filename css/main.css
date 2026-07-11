@@ -1095,6 +1095,8 @@
        half over a heavy bottom veil. */
     .hero-content { justify-content: flex-end; padding-bottom: 14vh; }
     .hero-title { font-size: clamp(44px, 12vw, 60px); }
+    /* Fits 320px-wide phones (SE): the wide-tracked kicker is the longest line. */
+    .hero-kicker { font-size: 11px; letter-spacing: 0.26em; }
     .hero-veil {
       background:
         linear-gradient(180deg, rgba(2,2,5,0.5) 0%, rgba(2,2,5,0.08) 14%, rgba(2,2,5,0.12) 34%, rgba(2,2,5,0.62) 52%, rgba(2,2,5,0.92) 74%, rgba(2,2,5,0.96) 100%);
