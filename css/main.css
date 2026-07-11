@@ -1069,7 +1069,9 @@
   @media (max-width: 900px) {
     .about h2 { font-size: 40px; }
     .about p { font-size: 16px; }
-    .title-block { padding: 0 16px; }
+    /* Clear the top cinema-frame letterbox bar (7.5vh) so the kicker isn't
+       swallowed by it. */
+    .title-block { padding: 0 16px; margin-top: 7.5vh; }
     .title-block .film-title { font-size: 42px; }
     .title-block .meta { font-size: 10px; flex-wrap: wrap; padding: 0 12px; }
     .controls { bottom: calc(24px + env(safe-area-inset-bottom)); gap: 20px; }
@@ -1080,27 +1082,44 @@
     .player-controls { grid-template-columns: auto 1fr auto auto; gap: 10px; padding: 40px 12px 12px; }
     .volume { display: none; }
     .timecode { min-width: 78px; font-size: 10px; }
-    .sec-nav { right: calc(12px + env(safe-area-inset-right)); gap: 8px; }
+    /* Slim, dim, flush-right ticks: the desktop 26/44px ones lay right on top
+       of the centred copy on a 390px screen. */
+    .sec-nav { right: calc(6px + env(safe-area-inset-right)); gap: 8px; }
     .sec-dot { padding: 7px 0; }        /* bigger tap targets */
     .sec-dot .sec-label { display: none; }
+    .sec-dot .sec-tick { width: 12px; background: rgba(248,239,224,0.18); }
+    .sec-dot.active .sec-tick { width: 20px; }
     .hero-sub { font-size: 14px; }
-    /* deepen the veil behind the centred copy so it reads over the console */
+    /* Phone hero: split VERTICALLY — the portrait owns the top half of the
+       screen (face fully clear of the copy), the text stack sits in the lower
+       half over a heavy bottom veil. */
+    .hero-content { justify-content: flex-end; padding-bottom: 14vh; }
+    .hero-title { font-size: clamp(44px, 12vw, 60px); }
     .hero-veil {
       background:
-        radial-gradient(ellipse 96% 50% at 50% 44%, rgba(2,2,5,0.72) 0%, rgba(2,2,5,0.3) 60%, transparent 100%),
-        linear-gradient(180deg, rgba(2,2,5,0.65) 0%, rgba(2,2,5,0.18) 32%, rgba(2,2,5,0.28) 62%, rgba(2,2,5,0.94) 100%);
+        linear-gradient(180deg, rgba(2,2,5,0.5) 0%, rgba(2,2,5,0.08) 14%, rgba(2,2,5,0.12) 34%, rgba(2,2,5,0.62) 52%, rgba(2,2,5,0.92) 74%, rgba(2,2,5,0.96) 100%);
     }
     .hero-tags { justify-content: center; }
-    /* On phones the portrait fills the screen, so the wave + baseline bar would
-       crowd it — drop them and centre the CTA. */
+    /* The wave + baseline bar would crowd the phone frame — drop them and
+       centre the CTA. */
     .hero-cta { justify-content: center; }
     .hero-wave, .hero-meta { display: none; }
-    /* The tall B&W profile can't share the narrow screen with the centred copy,
-       so on phones it tucks into the bottom-right corner (the type stays clean
-       above it) and his face still looks in toward the text. */
+    /* Portrait top-centred; the bottom-fade mask is retuned so he melts away
+       right where the image ends (~60% of the hero) instead of at the (now
+       empty) bottom of the layer. */
     .hero-photo-img {
-      background-size: 84% auto;
-      background-position: right -6% bottom -4%;
+      background-size: auto 60%;
+      background-position: 50% 0;
+      -webkit-mask-image:
+        linear-gradient(180deg, #000 0%, #000 34%, rgba(0,0,0,0.5) 48%, transparent 60%),
+        radial-gradient(ellipse 96% 116% at 50% 40%, #000 72%, transparent 100%);
+      mask-image:
+        linear-gradient(180deg, #000 0%, #000 34%, rgba(0,0,0,0.5) 48%, transparent 60%),
+        radial-gradient(ellipse 96% 116% at 50% 40%, #000 72%, transparent 100%);
+    }
+    /* Back-light halo follows the face up. */
+    .hero-photo-glow {
+      background: radial-gradient(ellipse 74% 30% at 50% 20%, rgba(216,164,88,0.16), rgba(216,164,88,0.05) 48%, transparent 72%);
     }
   /* Landscape phones: keep the title, film and controls from overlapping. */
   @media (max-height: 540px) {
