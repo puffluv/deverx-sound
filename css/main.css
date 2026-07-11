@@ -1,0 +1,1134 @@
+  :root {
+    --bg-deep: #020205;
+    --bg-mid: #07111a;
+    --bg-glow: #143448;
+    --text: #f8efe0;
+    --text-dim: rgba(248, 239, 224, 0.58);
+    --accent: #d8a458;
+    --accent-hot: #ff6f3c;
+    --cyan: #7bd8ff;
+    --glass: rgba(9, 11, 15, 0.48);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
+  body {
+    background:
+      radial-gradient(ellipse 80% 38% at 50% 94%, rgba(216,164,88,0.14) 0%, transparent 68%),
+      radial-gradient(ellipse 54% 32% at 72% 46%, rgba(123,216,255,0.09) 0%, transparent 62%),
+      /* soft "projector" pool behind the film, so its near-black edges read */
+      radial-gradient(ellipse 50% 42% at 50% 42%, rgba(128,152,180,0.13) 0%, transparent 72%),
+      radial-gradient(ellipse 90% 84% at 50% 18%, var(--bg-mid) 0%, var(--bg-deep) 72%);
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    position: relative;
+  }
+  body::after {
+    content: ''; position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
+    opacity: 0.2; pointer-events: none; mix-blend-mode: overlay;
+    z-index: 120;
+  }
+  body::before {
+    content: ''; position: fixed; inset: -12%;
+    z-index: 119; pointer-events: none;
+    background-image:
+      radial-gradient(circle at 20% 30%, rgba(255,255,255,0.18) 0 1px, transparent 1.55px),
+      radial-gradient(circle at 80% 70%, rgba(0,0,0,0.32) 0 1px, transparent 1.65px);
+    background-size: 3px 3px, 4px 4px;
+    opacity: 0.26;
+    mix-blend-mode: overlay;
+    animation: grain-drift 0.45s steps(2) infinite;
+  }
+  @keyframes grain-drift {
+    0% { transform: translate3d(0, 0, 0); }
+    20% { transform: translate3d(-2%, 1%, 0); }
+    40% { transform: translate3d(1%, -2%, 0); }
+    60% { transform: translate3d(2%, 2%, 0); }
+    80% { transform: translate3d(-1%, -1%, 0); }
+    100% { transform: translate3d(0, 0, 0); }
+  }
+  .cinema-frame {
+    position: fixed; inset: 0; z-index: 118; pointer-events: none;
+    box-shadow:
+      inset 0 0 140px rgba(0,0,0,0.84),
+      inset 0 0 34px rgba(216,164,88,0.08);
+  }
+  .cinema-frame::before,
+  .cinema-frame::after {
+    content: ''; position: absolute; left: 0; right: 0; height: 7.5vh;
+    background: linear-gradient(180deg, #020205 0%, rgba(2,2,5,0.92) 58%, rgba(2,2,5,0) 100%);
+  }
+  .cinema-frame::before { top: 0; }
+  .cinema-frame::after {
+    bottom: 0;
+    transform: rotate(180deg);
+  }
+  .stage::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 2;
+    background:
+      linear-gradient(105deg, transparent 0%, rgba(255,148,68,0.055) 42%, transparent 56%),
+      linear-gradient(83deg, transparent 0%, rgba(123,216,255,0.045) 63%, transparent 72%);
+    mix-blend-mode: screen;
+  }
+  .nav {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 30px 64px; position: relative; z-index: 30;
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+  }
+  .logo {
+    font-family: 'Bodoni Moda', serif;
+    font-weight: 700; font-size: 24px;
+    letter-spacing: 0.18em; display: flex; align-items: center; gap: 14px;
+    text-shadow: 0 0 28px rgba(216,164,88,0.28);
+  }
+  .logo-mark {
+    width: 42px; height: 12px; border-radius: 999px;
+    background: linear-gradient(90deg, transparent 0%, var(--accent) 20%, #fff1c4 50%, var(--cyan) 80%, transparent 100%);
+    box-shadow: 0 0 20px rgba(216,164,88,0.72), 0 0 48px rgba(123,216,255,0.18);
+  }
+  .nav-links { display: flex; gap: 44px; font-size: 11px; }
+  .nav-links a {
+    color: var(--text-dim); text-decoration: none;
+    position: relative; padding-bottom: 8px;
+    transition: color 0.25s, text-shadow 0.25s;
+  }
+  .nav-links a:hover,
+  .nav-links a.active {
+    color: var(--text);
+    text-shadow: 0 0 18px rgba(216,164,88,0.24);
+  }
+  .nav-links a.active::after {
+    content: ''; position: absolute; left: 0; right: 0; bottom: 0;
+    height: 1px; background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    box-shadow: 0 0 18px rgba(216,164,88,0.6);
+  }
+  .book-call {
+    color: var(--text); text-decoration: none; font-size: 11px;
+    border: 1px solid rgba(216,164,88,0.34);
+    border-radius: 999px;
+    padding: 11px 16px;
+    background: rgba(2,2,5,0.32);
+    box-shadow: inset 0 0 18px rgba(216,164,88,0.06), 0 0 22px rgba(0,0,0,0.25);
+  }
+  .title-block {
+    text-align: center; margin-top: 18px; z-index: 0; position: relative;
+    will-change: transform;
+  }
+  .title-block::before {
+    content: 'SELECTED SOUND REEL';
+    display: block;
+    margin-bottom: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.34em;
+    color: rgba(216,164,88,0.72);
+    text-shadow: 0 0 16px rgba(216,164,88,0.28);
+  }
+  .title-block .film-title {
+    font-family: 'Bodoni Moda', serif;
+    font-size: clamp(56px, 8vw, 112px); font-weight: 700;
+    letter-spacing: -0.045em;
+    line-height: 0.9;
+    text-shadow:
+      0 0 42px rgba(216,164,88,0.28),
+      0 18px 46px rgba(0,0,0,0.72);
+    transition: opacity 0.4s;
+  }
+  .title-block .meta {
+    margin-top: 18px; font-size: 11px; color: var(--text-dim);
+    display: flex; justify-content: center; align-items: center; gap: 14px;
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+  }
+  .title-block .meta a {
+    color: var(--accent); text-decoration: none;
+    text-shadow: 0 0 16px rgba(216,164,88,0.32);
+  }
+  .stage { position: fixed; inset: 0; overflow: hidden; z-index: 1; }
+  #canvas {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    cursor: grab;
+    touch-action: none; /* the film strip handles its own touch drags */
+  }
+  #canvas:active { cursor: grabbing; }
+  /* ===== Hero — a scroll-scrubbed intro video that parallax-dissolves into the
+     film. The video is paused; scrolling scrubs it frame-by-frame, then the
+     whole layer dollies forward + fades while the film settles in behind it. */
+  .hero {
+    position: fixed; inset: 0; z-index: 100; overflow: hidden;
+    will-change: opacity;
+    /* Neutral graphite "studio" backdrop (not a dead flat black) so the cut-out
+       Denis sits IN an environment. --hero-glow = soft light pooling behind him;
+       --hero-mid/--hero-edge = the base and the deep corners. The theme lives in
+       three vars — easy to retune the grey. */
+    --hero-glow: #34353a;
+    --hero-mid: #202126;
+    --hero-edge: #101113;
+    background:
+      radial-gradient(ellipse 64% 78% at 74% 54%, var(--hero-glow) 0%, transparent 66%),
+      radial-gradient(ellipse 120% 90% at 50% 8%, var(--hero-mid) 0%, var(--hero-edge) 70%);
+  }
+  /* The hero portrait replaces the old 3D console. A graded studio portrait of
+     Denis that melts into the near-black room on every edge. The image is cool
+     and overcast; the type is warm gold — a deliberate temperature contrast.
+     It rides a slow cinematic push-in on scroll, then dissolves into the film
+     (driven in the render loop). */
+  .hero-photo {
+    position: absolute; inset: 0; overflow: hidden; background: transparent;
+  }
+  .hero-photo-img {
+    position: absolute; inset: 0; z-index: 2;
+    /* Background-removed cut-out (transparent PNG/WebP) so Denis stands directly
+       in the dark studio. Sized a touch above contain so he reads a bit larger;
+       anchored low so he's grounded rather than floating. */
+    /* ../ because this stylesheet lives in css/ — url() resolves from there. */
+    background: url('../img/denis2-hero.webp') 50% 84% / auto 112% no-repeat;
+    /* B&W profile shot: keep it monochrome (grayscale), lift it a touch since
+       it's a dark frame, and let the dark jacket melt into the graphite. */
+    filter: grayscale(1) contrast(1.05) brightness(1.08)
+            drop-shadow(0 24px 55px rgba(0,0,0,0.5));
+    /* Dissolve his edges INTO the backdrop so there's no hard cut-out silhouette
+       — he emerges from the dark. TWO masks intersected: a strong bottom fade
+       (lower body melts away) AND a gentle all-around feather on the side/top
+       edges. The feather is wide/soft so it never eats the raised hand or
+       shoulder, just softens the outline. */
+    -webkit-mask-image:
+      linear-gradient(180deg, #000 0%, #000 70%, rgba(0,0,0,0.5) 87%, transparent 99%),
+      radial-gradient(ellipse 96% 116% at 50% 40%, #000 72%, transparent 100%);
+    -webkit-mask-composite: source-in;
+    mask-image:
+      linear-gradient(180deg, #000 0%, #000 70%, rgba(0,0,0,0.5) 87%, transparent 99%),
+      radial-gradient(ellipse 96% 116% at 50% 40%, #000 72%, transparent 100%);
+    mask-composite: intersect;
+    transform: translateZ(0); will-change: transform;
+  }
+  /* Muted ACCENT (gold) back-light halo BEHIND the figure (z-index below the
+     photo), centred directly behind Denis so it haloes his silhouette and lifts
+     him off the grey. Low alpha = subtle, not the old bright yellow. */
+  .hero-photo-glow {
+    position: absolute; inset: 0; pointer-events: none; z-index: 1;
+    background: radial-gradient(ellipse 48% 56% at 50% 44%, rgba(216,164,88,0.15), rgba(216,164,88,0.05) 46%, transparent 70%);
+  }
+  .hero-veil {
+    position: absolute; inset: 0; pointer-events: none;
+    background:
+      linear-gradient(180deg, rgba(1,1,3,0.58) 0%, rgba(1,1,3,0.14) 30%, rgba(1,1,3,0.22) 62%, rgba(1,1,3,0.82) 100%),
+      radial-gradient(ellipse 88% 68% at 62% 50%, transparent 34%, rgba(1,1,3,0.48) 100%),
+      linear-gradient(90deg, rgba(1,1,3,0.8) 0%, rgba(1,1,3,0.42) 28%, rgba(1,1,3,0.04) 54%, rgba(1,1,3,0.16) 100%);
+  }
+  .hero-content {
+    position: absolute; inset: 0; z-index: 2; pointer-events: none;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 0 6vw; will-change: transform, opacity;
+  }
+  .hero-kicker {
+    font-family: 'JetBrains Mono', monospace; font-size: 13px;
+    letter-spacing: 0.34em; text-transform: uppercase; color: var(--accent);
+    margin-bottom: 24px; text-shadow: 0 0 18px rgba(216,164,88,0.45);
+  }
+  .hero-title {
+    font-family: 'Bodoni Moda', serif; font-weight: 700;
+    font-size: clamp(52px, 9vw, 140px); line-height: 0.9; letter-spacing: -0.07em;
+    text-shadow: 0 0 60px rgba(0,0,0,0.55), 0 26px 70px rgba(0,0,0,0.7);
+  }
+  .hero-sub {
+    margin-top: 28px; font-size: clamp(15px, 1.8vw, 19px); line-height: 1.5;
+    color: var(--text-dim); max-width: 560px;
+  }
+  .hero-tags {
+    margin-top: 30px; display: flex; gap: 10px; flex-wrap: wrap;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-dim);
+  }
+  .hero-tags span {
+    border: 1px solid rgba(216,164,88,0.3); border-radius: 999px;
+    padding: 7px 13px; background: rgba(2,2,5,0.35);
+  }
+  /* Load-in stagger: kicker → title → sub → tags → CTA rise one after another.
+     Children start hidden and only animate once body.hero-in is set (when the
+     loading overlay clears), so the cascade isn't wasted behind the loader. */
+  .hero-kicker, .hero-title, .hero-sub, .hero-tags, .hero-cta { opacity: 0; }
+  .hero-in .hero-kicker, .hero-in .hero-title, .hero-in .hero-sub,
+  .hero-in .hero-tags, .hero-in .hero-cta {
+    animation: hero-rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .hero-in .hero-kicker { animation-delay: 0.05s; }
+  .hero-in .hero-title  { animation-delay: 0.17s; }
+  .hero-in .hero-sub    { animation-delay: 0.29s; }
+  .hero-in .hero-tags   { animation-delay: 0.41s; }
+  .hero-in .hero-cta    { animation-delay: 0.53s; }
+  @keyframes hero-rise {
+    from { opacity: 0; transform: translateY(26px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  /* The surname carries the site's gold — ties the title to the wave and the
+     CTA. .hero-title's text-shadow would bleed through the transparent
+     gradient glyphs, so the span swaps it for an equivalent drop-shadow. */
+  .hero-title .t-gold {
+    background: linear-gradient(100deg, #f6e3c2 0%, #e9be7d 45%, #d8a458 78%, #c08b41 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    text-shadow: none; filter: drop-shadow(0 22px 55px rgba(0,0,0,0.6));
+  }
+  /* Vertical editorial strip on the far-left edge (desktop only) — fills the
+     margin that opened up when the copy column moved toward the photo. */
+  .hero-side-meta { display: none; }
+  /* Wide screens: split composition — the copy sits in the left half, the
+     portrait owns the right half. The text column is pushed in from the left
+     edge so it hugs the photo rather than the frame. */
+  @media (min-width: 901px) {
+    .hero-content {
+      align-items: flex-start; text-align: left;
+      justify-content: center;
+      left: 17vw; right: 42%; padding: 0; max-width: none;
+    }
+    .hero-title { font-size: clamp(48px, 6.4vw, 104px); }
+    .hero-sub { max-width: 520px; }
+    .hero-cta { justify-content: flex-start; }
+    .hero-kicker { display: flex; align-items: center; gap: 14px; }
+    .hero-kicker::before {
+      content: ''; width: 38px; height: 2px; border-radius: 2px;
+      background: linear-gradient(90deg, var(--accent), transparent);
+      box-shadow: 0 0 14px rgba(216,164,88,0.6);
+    }
+    /* Left-side darkening floor so the type reads cleanly; the photo side of
+       the frame stays clean and bright. */
+    .hero-veil {
+      background:
+        linear-gradient(90deg, rgba(13,14,16,0.74) 0%, rgba(13,14,16,0.4) 34%, transparent 58%),
+        linear-gradient(180deg, rgba(13,14,16,0.42) 0%, transparent 26%, transparent 74%, rgba(10,11,13,0.62) 100%);
+    }
+    /* Portrait occupies the right half of the frame (its container overlaps
+       the text column slightly so the two read as one composition). */
+    .hero-photo { left: 42%; right: 0; }
+    .hero-side-meta {
+      display: flex; align-items: center; gap: 16px;
+      position: absolute; left: 3.8vw; top: 50%; transform: translateY(-50%);
+      writing-mode: vertical-rl; z-index: 3; pointer-events: none;
+      font-family: 'JetBrains Mono', monospace; font-size: 10px;
+      letter-spacing: 0.3em; text-transform: uppercase;
+      color: rgba(248,239,224,0.42);
+    }
+    .hero-side-meta::before {
+      content: ''; width: 1px; height: 56px;
+      background: linear-gradient(180deg, transparent, rgba(216,164,88,0.5), transparent);
+    }
+  }
+  .hero-scroll {
+    position: absolute; bottom: 6vh; left: 50%; transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 12px; z-index: 3;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.3em;
+    text-transform: uppercase; color: var(--text-dim); pointer-events: none;
+  }
+  .hero-scroll .sb {
+    width: 22px; height: 34px; border: 1.5px solid rgba(216,164,88,0.5);
+    border-radius: 999px; position: relative;
+  }
+  .hero-scroll .sb::after {
+    content: ''; position: absolute; left: 50%; top: 7px; width: 3px; height: 7px;
+    border-radius: 2px; background: var(--accent); transform: translateX(-50%);
+    animation: hero-scroll-dot 1.6s ease-in-out infinite;
+  }
+  @keyframes hero-scroll-dot {
+    0%, 100% { opacity: 0; transform: translate(-50%, 0); }
+    40% { opacity: 1; }
+    75% { opacity: 0; transform: translate(-50%, 13px); }
+  }
+  /* CTA cluster under the tags: a gold "Showreel" + a ghost "contact". Sits
+     inside .hero-content (which is pointer-events:none) so it re-enables them. */
+  .hero-cta {
+    margin-top: 34px; display: flex; gap: 14px; flex-wrap: wrap;
+    justify-content: center; pointer-events: auto;
+  }
+  .hero-btn {
+    display: inline-flex; align-items: center; gap: 9px;
+    font-family: 'JetBrains Mono', monospace; font-size: 12px;
+    letter-spacing: 0.13em; text-transform: uppercase; white-space: nowrap;
+    padding: 13px 22px; border-radius: 999px; cursor: pointer; text-decoration: none;
+    transition: transform .25s, background .25s, box-shadow .25s, border-color .25s, color .25s;
+  }
+  .hero-btn svg { width: 13px; height: 13px; display: block; }
+  .hero-btn.primary {
+    background: var(--accent); color: #0a0806; border: 1.5px solid var(--accent);
+    box-shadow: 0 10px 30px rgba(216,164,88,0.3);
+  }
+  .hero-btn.primary:hover { transform: translateY(-2px); box-shadow: 0 16px 42px rgba(216,164,88,0.5); }
+  .hero-btn.ghost {
+    background: rgba(8,10,14,0.42); color: var(--text);
+    border: 1.5px solid rgba(216,164,88,0.42); backdrop-filter: blur(10px);
+  }
+  .hero-btn.ghost:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-2px); }
+  .hero-btn:active { transform: scale(0.97); }
+  /* Animated sound wave filling the lower-left dead space — on-brand motion. */
+  .hero-wave {
+    display: block; position: absolute; left: 0; bottom: 11vh; width: 100%; height: 30vh;
+    z-index: 1; pointer-events: none;
+  }
+  /* Editorial baseline meta bar pinned to the bottom edge. */
+  /* Sits at ~8.5vh, clear of the global .cinema-frame bottom letterbox bar
+     (7.5vh) which paints over the hero — otherwise it'd be swallowed by it. */
+  .hero-meta {
+    display: flex; position: absolute; left: 0; right: 0; bottom: 8.5vh; z-index: 4;
+    align-items: center; justify-content: space-between; padding: 0 3.8vw;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.16em;
+    text-transform: uppercase; color: rgba(248,239,224,0.66); pointer-events: none;
+  }
+  .hero-meta::before {
+    content: ''; position: absolute; left: 3.6vw; right: 3.6vw; top: -16px; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(216,164,88,0.26) 18%, rgba(216,164,88,0.26) 82%, transparent);
+  }
+  .hero-meta a { color: inherit; text-decoration: none; pointer-events: auto; transition: color .25s; }
+  .hero-meta a:hover { color: var(--accent); }
+  .hero-meta .m-group { display: flex; align-items: center; gap: 20px; }
+  .hero-meta .m-status { display: inline-flex; align-items: center; gap: 9px; color: var(--text); }
+  .hero-meta .m-status::before {
+    content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--accent);
+    box-shadow: 0 0 10px rgba(216,164,88,0.85); animation: hero-pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes hero-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+  /* Prev / dots / Next as one centred control cluster at the bottom. */
+  .controls {
+    position: absolute; bottom: 46px; left: 50%; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 28px; z-index: 25;
+  }
+  .arrow {
+    width: 52px; height: 52px; padding: 0; flex: 0 0 auto;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: rgba(8, 10, 14, 0.5);
+    border: 1.5px solid rgba(216,164,88,0.5);
+    border-radius: 50%; color: var(--text); cursor: pointer;
+    backdrop-filter: blur(14px);
+    box-shadow: 0 10px 28px rgba(0,0,0,0.42), inset 0 0 16px rgba(216,164,88,0.06);
+    transition: transform .25s, background .25s, box-shadow .25s, border-color .25s, color .25s;
+  }
+  .arrow svg { width: 20px; height: 20px; display: block; }
+  .arrow:hover {
+    background: var(--accent); color: #090706; border-color: var(--accent);
+    transform: translateY(-2px) scale(1.06);
+    box-shadow: 0 14px 38px rgba(216,164,88,0.45);
+  }
+  .arrow:active { transform: scale(0.95); }
+  .dots {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: rgba(248,239,224,0.24);
+    transition: all 0.3s; cursor: pointer; border: none; padding: 0;
+  }
+  .dot.active {
+    background: var(--accent); width: 30px; border-radius: 3px;
+    box-shadow: 0 0 18px rgba(216,164,88,0.72);
+  }
+  .loading {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase;
+    z-index: 40; transition: opacity 0.6s;
+  }
+  .loading.hidden { opacity: 0; pointer-events: none; }
+  .error-box {
+    position: absolute; inset: auto 24px 100px 24px;
+    background: rgba(50, 10, 10, 0.95);
+    border: 1px solid #ff5555;
+    color: #ffaaaa;
+    padding: 16px 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    border-radius: 8px;
+    z-index: 100;
+    display: none;
+  }
+  /* ABOUT ME section — the active frame's image becomes its background */
+  /* Static full-screen background = the active frame's image (behind the film) */
+  .page-bg {
+    position: fixed; inset: -12vh 0; z-index: 1;    /* sits ABOVE the solid deck-bg */
+    opacity: 0; pointer-events: none;              /* waves never bare a seam as they */
+    transform: scale(1.04);                        /* ride up with the About block */
+    overflow: hidden;
+    background-color: #020205;                     /* dark base under the wave canvas */
+    background-image:
+      radial-gradient(ellipse at 50% 42%, rgba(123,216,255,0.06), transparent 46%),
+      radial-gradient(ellipse at 50% 50%, #0a1a28 0%, #07111a 46%, #020205 100%);
+  }
+  .about {
+    position: fixed; inset: 0; z-index: 50;
+    opacity: 1; pointer-events: none;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .about-veil {
+    position: absolute; inset: 0; opacity: 0;
+    background:
+      linear-gradient(90deg, rgba(5,5,16,0.84) 0%, rgba(5,5,16,0.46) 48%, rgba(5,5,16,0.08) 100%),
+      linear-gradient(0deg, rgba(5,5,16,0.6) 0%, rgba(5,5,16,0) 42%),
+      radial-gradient(ellipse at 76% 46%, rgba(123,216,255,0.1), transparent 42%);
+  }
+  /* About is laid out like the deck sections: centred kicker + big serif title +
+     supporting line, all centre-aligned. */
+  .about-inner {
+    position: relative; z-index: 2; opacity: 0;
+    padding: 0 6vw; max-width: 880px; text-align: center;
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .about-kicker {
+    font-family: 'JetBrains Mono', monospace; font-size: 13px;
+    letter-spacing: 0.28em; text-transform: uppercase; color: var(--accent);
+  }
+  .about h2 {
+    font-family: 'Bodoni Moda', serif;
+    font-size: clamp(40px, 6vw, 88px); font-weight: 700; line-height: 0.98;
+    margin: 14px 0 6vh; letter-spacing: -0.04em;
+    text-shadow: 0 0 44px rgba(216,164,88,0.18), 0 20px 54px rgba(0,0,0,0.78);
+  }
+  .about p {
+    font-size: 19px; line-height: 1.7; color: rgba(248,239,224,0.82);
+    max-width: 620px;
+  }
+  /* "Мне доверяют" — revealed by scrolling DOWN past the About page. The heading
+     stays centred while the row of objects sweeps right -> left with the scroll. */
+  .trust {
+    position: fixed; inset: 0; z-index: 55;
+    opacity: 1; pointer-events: none;
+    display: flex; flex-direction: column; justify-content: center;
+    overflow: hidden;
+    transform: translate3d(0,110vh,0); /* parked below until JS positions the deck */
+    /* No own background — the shared .deck-bg behind the whole deck shows through. */
+  }
+  .trust-head { text-align: center; margin-bottom: 6vh; padding: 0 6vw; }
+  .trust-kicker {
+    font-family: 'JetBrains Mono', monospace; font-size: 13px;
+    letter-spacing: 0.28em; text-transform: uppercase; color: var(--accent);
+  }
+  .trust h2 {
+    font-family: 'Bodoni Moda', serif;
+    font-size: clamp(40px, 6vw, 88px); font-weight: 700; line-height: 0.98;
+    margin-top: 14px; letter-spacing: -0.04em;
+    text-shadow: 0 0 44px rgba(216,164,88,0.18), 0 20px 54px rgba(0,0,0,0.78);
+  }
+  .trust-viewport {
+    width: 100%; overflow-x: hidden; overflow-y: visible;
+    padding: 20px 0;                 /* vertical room so a hovered card isn't clipped */
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+  }
+  .trust-track {
+    display: flex; gap: 36px; width: max-content; will-change: transform;
+    pointer-events: auto; cursor: grab; touch-action: pan-y;
+  }
+  .trust-track:active { cursor: grabbing; }
+  /* Dark glass tile (matches the cinematic deck) holding a white logo-plate so
+     EVERY logo reads — incl. JPGs that carry their own background. Logo is
+     monochrome at rest, resolves to full colour on hover. Company name below. */
+  .trust-item {
+    flex: 0 0 auto;
+    width: 260px;
+    display: flex; flex-direction: column; align-items: center; gap: 16px;
+    border: 1px solid rgba(216,164,88,0.28);
+    border-radius: 20px;
+    /* Solid-ish tile (NO backdrop-filter): the marquee scrolls continuously, and
+       a live backdrop blur on all 24 moving cards forces a full-screen re-blur
+       every frame -> severe jank. A near-opaque fill over the dark deck reads the
+       same. (Touch already dropped the blur for the same reason.) */
+    background: rgba(9,11,15,0.82);
+    box-shadow: inset 0 0 30px rgba(216,164,88,0.05), 0 16px 50px rgba(0,0,0,0.5);
+    padding: 22px 22px 20px;
+    transition: border-color .3s, box-shadow .3s, transform .3s;
+  }
+  .trust-logo {
+    width: 100%; height: 140px; border-radius: 14px;
+    background: #fff;
+    display: flex; align-items: center; justify-content: center;
+    padding: 26px;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.06);
+  }
+  .trust-logo img {
+    max-width: 100%; max-height: 100%; object-fit: contain;
+    filter: grayscale(1) contrast(1.04);
+    transition: filter .35s, transform .35s;
+  }
+  .trust-name {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--text-dim); text-align: center; transition: color .3s;
+  }
+  .trust-item:hover {
+    border-color: rgba(216,164,88,0.6);
+    box-shadow: inset 0 0 30px rgba(216,164,88,0.1), 0 22px 60px rgba(0,0,0,0.6), 0 0 30px rgba(216,164,88,0.18);
+    transform: translateY(-6px);
+  }
+  .trust-item:hover .trust-logo img { filter: none; transform: scale(1.06); }
+  .trust-item:hover .trust-name { color: var(--accent); }
+  @media (max-width: 900px) {
+    .trust h2 { font-size: 34px; }
+    .trust-item { width: 200px; padding: 18px 18px 16px; }
+    .trust-logo { height: 110px; padding: 20px; }
+    .trust-track { gap: 22px; }
+  }
+  /* ===== Vertical content deck: Reviews / Education / Contacts ===== */
+  .deck-section {
+    position: fixed; inset: 0;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    text-align: center; padding: 0 6vw; overflow: hidden;
+    pointer-events: auto;
+    transform: translate3d(0,110vh,0); /* parked below until JS positions the deck */
+    perspective: 1400px;                 /* gives child cards real 3D depth on tilt */
+  }
+  /* scroll-reveal: tagged children start hidden; JS fades + moves them in */
+  .reveal { opacity: 0; will-change: transform, opacity, filter; transform-style: preserve-3d; }
+  .r-kicker { display: inline-block; opacity: 0; will-change: transform, opacity, letter-spacing; }
+  .r-title { opacity: 0; will-change: transform; }   /* shown by JS once split into words */
+  .rw  { display: inline-block; overflow: hidden; vertical-align: top; padding: 0.12em 0; margin: -0.12em 0; }
+  .rwi { display: inline-block; transform: translateY(112%); will-change: transform; }
+  .deck-kicker {
+    font-family: 'JetBrains Mono', monospace; font-size: 13px;
+    letter-spacing: 0.28em; text-transform: uppercase; color: var(--accent);
+  }
+  .deck-section h2 {
+    font-family: 'Bodoni Moda', serif;
+    font-size: clamp(38px, 5.6vw, 84px); font-weight: 700; line-height: 0.98;
+    margin: 14px 0 6vh; letter-spacing: -0.04em;
+    text-shadow: 0 0 44px rgba(216,164,88,0.18), 0 20px 54px rgba(0,0,0,0.78);
+  }
+  /* ===== Shared continuous deck backdrop (one bg for trust/reviews/edu/contacts).
+     It's taller than the viewport and JS scrolls it slowly for parallax. ===== */
+  .deck-bg {
+    /* z-index 0: a solid dark sheet at the very BOTTOM, behind the waves (z1) and
+       the About page (z50). So when About + waves slide up, this is already there
+       underneath — no gap/seam. The deck sections (z55+) show it as their bg too. */
+    position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0;
+    overflow: hidden;
+    /* Top color MUST match the waves' base (#020205) so the About->Trust seam is
+       invisible: at the transition line the wave bottom (fading to #020205) meets
+       this, and any lighter top here would read as a band. Stay dark up top, lift
+       only lower down for subtle depth. */
+    background: linear-gradient(180deg, #020205 0%, #04050a 30%, #07090e 65%, #04050a 100%);
+  }
+  .deck-bg-inner { position: absolute; left: 0; right: 0; top: 0; height: 560vh; will-change: transform; }
+  .deck-orb { position: absolute; border-radius: 50%; filter: blur(30px); will-change: transform; }
+  /* Reviews — a draggable horizontal rail of testimonial cards, each with an
+     avatar, name/role and the full quote (scrolls inside if long). */
+  .reviews { z-index: 56; }
+  .review-viewport {
+    width: 100%; max-width: 1240px; overflow: hidden; padding: 12px 0;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent);
+  }
+  .review-rail {
+    display: flex; gap: 26px; width: max-content;
+    cursor: grab; touch-action: pan-y; will-change: transform;
+  }
+  .review-rail:active { cursor: grabbing; }
+  .review-card {
+    flex: 0 0 auto; width: 420px; height: 380px; text-align: left;
+    display: flex; flex-direction: column;
+    background: rgba(9,11,15,0.55);
+    border: 1px solid rgba(216,164,88,0.22); border-radius: 22px;
+    padding: 30px 30px 26px;
+    box-shadow: inset 0 0 30px rgba(216,164,88,0.05), 0 18px 54px rgba(0,0,0,0.5);
+    backdrop-filter: blur(12px);
+    position: relative; transition: border-color .3s, box-shadow .3s, transform .3s;
+  }
+  .review-card:hover {
+    border-color: rgba(216,164,88,0.5);
+    box-shadow: inset 0 0 30px rgba(216,164,88,0.08), 0 26px 70px rgba(0,0,0,0.6);
+    transform: translateY(-4px);
+  }
+  .review-head { display: flex; align-items: center; gap: 15px; margin-bottom: 18px; }
+  .review-avatar {
+    width: 58px; height: 58px; border-radius: 50%; flex: 0 0 auto; overflow: hidden;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.45), 0 0 0 2px rgba(216,164,88,0.4);
+  }
+  .review-avatar img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+    -webkit-user-drag: none; user-select: none;
+  }
+  .review-who { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .review-who .rv-name {
+    font-family: 'Bodoni Moda', serif; font-size: 19px; color: var(--text); line-height: 1.05;
+  }
+  .review-who .rv-role {
+    font-family: 'JetBrains Mono', monospace; font-size: 10.5px; letter-spacing: 0.07em;
+    text-transform: uppercase; color: var(--text-dim);
+  }
+  .review-body {
+    font-size: 14.5px; line-height: 1.62; color: rgba(248,239,224,0.84);
+    overflow: hidden; flex: 1 1 auto;
+    -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 86%, transparent 100%);
+    mask-image: linear-gradient(180deg, #000 0%, #000 86%, transparent 100%);
+  }
+  .review-card::before {
+    content: '\201C'; position: absolute; top: 12px; right: 22px;
+    font-family: 'Bodoni Moda', serif; font-size: 72px; line-height: 1;
+    color: rgba(216,164,88,0.12); pointer-events: none;
+  }
+  .rv-video {
+    margin-top: 14px; align-self: flex-start;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.05em;
+    color: var(--accent); text-decoration: none;
+    border: 1px solid rgba(216,164,88,0.4); border-radius: 999px; padding: 7px 14px;
+    transition: background .25s, border-color .25s; white-space: nowrap;
+  }
+  .rv-video:hover { background: rgba(216,164,88,0.14); border-color: var(--accent); }
+  .review-hint {
+    margin-top: 26px; font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-dim);
+    display: flex; align-items: center; gap: 10px; opacity: 0.7;
+  }
+  .review-hint::before, .review-hint::after {
+    content: ''; width: 26px; height: 1px; background: rgba(216,164,88,0.4);
+  }
+  /* ===== Education — horizontal scrollytelling rail =====
+     Section 3 is a sideways journey of full-screen panels. The wheel walks the
+     rail (JS); each panel's .e-rev children rise + fade in as it centres. ===== */
+  .education { z-index: 57; padding: 0; overflow: hidden; }
+  .edu-rail { position: absolute; inset: 0; display: flex; width: max-content; will-change: transform; }
+  .edu-panel {
+    flex: 0 0 100vw; width: 100vw; height: 100%;
+    display: flex; align-items: center; justify-content: center; padding: 0 9vw;
+  }
+  .edu-inner { width: 100%; max-width: 720px; text-align: center; }
+  .edu-inner.wide { max-width: 1040px; }
+  /* .e-rev children start hidden; JS drives opacity + translateY each frame. */
+  .edu-panel .e-rev { opacity: 0; will-change: transform, opacity; }
+  .edu-kick {
+    display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 12px;
+    letter-spacing: 0.32em; text-transform: uppercase; color: var(--accent); margin-bottom: 22px;
+  }
+  /* .education prefix beats the generic ".deck-section h2" rule. */
+  .education .edu-title {
+    font-family: 'Bodoni Moda', serif; font-weight: 700; letter-spacing: -0.04em;
+    font-size: clamp(46px, 8vw, 116px); line-height: 0.94; margin: 0;
+    text-shadow: 0 0 50px rgba(216,164,88,0.2), 0 24px 60px rgba(0,0,0,0.7);
+  }
+  .edu-tag {
+    margin-top: 26px; font-size: clamp(15px, 1.7vw, 19px); line-height: 1.5;
+    color: var(--text-dim); max-width: 540px; margin-left: auto; margin-right: auto;
+  }
+  .edu-big {
+    font-family: 'Bodoni Moda', serif; font-size: clamp(26px, 4vw, 52px);
+    line-height: 1.18; letter-spacing: -0.02em; color: var(--text);
+  }
+  .edu-big em { color: var(--accent); font-style: italic; }
+  /* Why — 4 advantage cards */
+  .edu-grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 36px; }
+  .edu-feat {
+    border: 1px solid rgba(216,164,88,0.22); border-radius: 18px; padding: 26px 20px;
+    background: rgba(9,11,15,0.45); text-align: left;
+    box-shadow: inset 0 0 30px rgba(216,164,88,0.05), 0 16px 44px rgba(0,0,0,0.4);
+    transition: border-color .3s, transform .3s;
+  }
+  .edu-feat:hover { border-color: rgba(216,164,88,0.55); transform: translateY(-6px); }
+  .edu-feat .ic { font-size: 30px; display: block; margin-bottom: 16px; }
+  .edu-feat h4 { font-family: 'Bodoni Moda', serif; font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+  .edu-feat p { font-size: 13px; line-height: 1.4; color: var(--text-dim); }
+  /* Philosophy */
+  .edu-quote-big {
+    font-family: 'Bodoni Moda', serif; font-size: clamp(28px, 4.4vw, 58px);
+    line-height: 1.1; letter-spacing: -0.02em; color: var(--text);
+    text-shadow: 0 20px 54px rgba(0,0,0,0.7);
+  }
+  .edu-quote-sub {
+    margin-top: 26px; font-size: clamp(15px, 1.8vw, 20px); line-height: 1.55;
+    color: var(--text-dim); max-width: 600px; margin-left: auto; margin-right: auto;
+  }
+  .edu-quote-sub em { color: var(--accent); font-style: italic; }
+  /* What you'll master — numbered grid */
+  .edu-master {
+    list-style: none; counter-reset: edu; text-align: left; margin-top: 34px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 14px 40px;
+  }
+  .edu-master li {
+    position: relative; padding-left: 46px; counter-increment: edu;
+    font-size: 15px; line-height: 1.4; color: rgba(248,239,224,0.86);
+  }
+  .edu-master li::before {
+    content: counter(edu, decimal-leading-zero); position: absolute; left: 0; top: 0;
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--accent);
+    border: 1px solid rgba(216,164,88,0.3); border-radius: 7px; padding: 3px 7px;
+  }
+  /* What you get — checklist */
+  .edu-get2 { list-style: none; text-align: left; margin-top: 30px; display: flex; flex-direction: column; gap: 16px; max-width: 540px; margin-left: auto; margin-right: auto; }
+  .edu-get2 li {
+    position: relative; padding-left: 40px; font-size: clamp(16px, 1.9vw, 20px);
+    line-height: 1.4; color: rgba(248,239,224,0.9);
+  }
+  .edu-get2 li::before {
+    content: '✓'; position: absolute; left: 0; top: 0; width: 26px; height: 26px;
+    display: flex; align-items: center; justify-content: center; font-size: 13px;
+    color: var(--accent); border: 1px solid rgba(216,164,88,0.45); border-radius: 50%;
+  }
+  /* Pricing card */
+  .edu-price-card {
+    border: 1px solid rgba(216,164,88,0.42); border-radius: 24px; padding: 40px 44px;
+    background: linear-gradient(160deg, rgba(216,164,88,0.14), rgba(9,11,15,0.55));
+    box-shadow: 0 30px 80px rgba(0,0,0,0.55), inset 0 0 40px rgba(216,164,88,0.06);
+    max-width: 520px; margin: 30px auto 0; text-align: left;
+  }
+  .pc-label { font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-dim); }
+  .pc-figure { display: flex; align-items: baseline; gap: 14px; margin: 14px 0 18px; }
+  .pc-price { font-family: 'Bodoni Moda', serif; font-size: clamp(54px, 8vw, 76px); font-weight: 700; color: var(--text); line-height: 1; }
+  .pc-dur { font-family: 'JetBrains Mono', monospace; font-size: 14px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--cyan); }
+  .pc-note { font-size: 14px; line-height: 1.55; color: var(--text-dim); margin-bottom: 26px; }
+  .edu-cta {
+    display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 13px;
+    letter-spacing: 0.16em; text-transform: uppercase; color: #090706; text-decoration: none;
+    background: var(--accent); padding: 16px 34px; border-radius: 999px;
+    transition: transform .25s, box-shadow .25s;
+  }
+  .edu-cta:hover { transform: translateY(-2px); box-shadow: 0 14px 36px rgba(216,164,88,0.4); }
+  /* Rail UI: progress bar + scroll hint, fixed within the section */
+  .edu-ui { position: absolute; left: 0; right: 0; bottom: 6vh; z-index: 5; display: flex; flex-direction: column; align-items: center; gap: 16px; pointer-events: none; }
+  .edu-progress { width: min(280px, 40vw); height: 2px; background: rgba(216,164,88,0.18); border-radius: 2px; overflow: hidden; }
+  .edu-progress span { display: block; height: 100%; width: 0; background: var(--accent); box-shadow: 0 0 12px rgba(216,164,88,0.6); transition: width .12s linear; }
+  .edu-hint {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--text-dim); opacity: 0.7; transition: opacity .4s;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .edu-hint .arrow { animation: edu-nudge 1.4s ease-in-out infinite; }
+  @keyframes edu-nudge { 0%,100% { transform: translateX(0); } 50% { transform: translateX(6px); } }
+  /* Contacts — final CTA */
+  .contacts { z-index: 58; pointer-events: auto; }
+  .contact-mail {
+    font-family: 'Bodoni Moda', serif; font-size: clamp(30px, 4.4vw, 58px);
+    color: var(--accent); text-decoration: none; margin-bottom: 18px;
+    padding-bottom: 8px; border-bottom: 1px solid rgba(216,164,88,0.3);
+    text-shadow: 0 0 28px rgba(216,164,88,0.4);
+    transition: text-shadow .3s, border-color .3s;
+  }
+  .contact-mail:hover { border-color: var(--accent); text-shadow: 0 0 38px rgba(216,164,88,0.75); }
+  .contact-sub {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.12em;
+    color: var(--text-dim); margin-bottom: 5vh;
+  }
+  .contact-sub a { color: var(--text-dim); text-decoration: none; border-bottom: 1px solid rgba(248,239,224,0.2); }
+  .contact-sub a:hover { color: var(--text); }
+  .contact-links { display: flex; gap: 30px; margin-bottom: 5vh; flex-wrap: wrap; justify-content: center; }
+  .contact-links a {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--text-dim); text-decoration: none;
+    transition: color 0.25s;
+  }
+  .contact-links a:hover { color: var(--text); }
+  .contact-cta {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.18em;
+    text-transform: uppercase; color: #090706; text-decoration: none;
+    background: var(--accent); padding: 16px 34px; border-radius: 999px;
+    box-shadow: 0 0 34px rgba(216,164,88,0.42);
+    transition: box-shadow .25s, filter .25s, transform .25s cubic-bezier(.2,.8,.2,1);
+  }
+  .contact-cta:hover { box-shadow: 0 0 52px rgba(216,164,88,0.7); filter: brightness(1.08); }
+  @media (max-width: 900px) {
+    .review-card { width: 82vw; max-width: 360px; height: min(380px, 56vh); padding: 24px 22px; }
+    .review-body { font-size: 14px; touch-action: none; }
+    .review-hint { margin-top: 18px; }
+    .edu-panel { padding: 0 7vw; }
+    .edu-grid4 { grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 24px; }
+    .edu-feat { padding: 18px 16px; }
+    .edu-feat .ic { font-size: 24px; margin-bottom: 10px; }
+    .edu-feat h4 { font-size: 18px; }
+    .edu-master { grid-template-columns: 1fr; gap: 11px; margin-top: 22px; max-height: 52vh; overflow-y: hidden; touch-action: none; }
+    .edu-get2 { gap: 12px; }
+    .edu-price-card { padding: 28px 26px; margin-top: 22px; }
+    .edu-ui { bottom: calc(3vh + env(safe-area-inset-bottom)); }
+    .contact-links { gap: 18px; }
+  }
+  /* Small phones: tighten the big serif type so headings never clip. */
+  @media (max-width: 480px) {
+    .hero-kicker { font-size: 11px; letter-spacing: 0.2em; margin-bottom: 18px; }
+    .about h2 { font-size: 34px; margin-bottom: 4vh; }
+    .trust h2 { font-size: 30px; }
+    .trust-head { margin-bottom: 4vh; }
+    .deck-section h2 { font-size: 32px; margin-bottom: 4vh; }
+    .review-card { width: 86vw; padding: 20px 18px; }
+    .education .edu-title { font-size: 40px; }
+    .edu-big { font-size: 24px; }
+    .edu-quote-big { font-size: 26px; }
+    .edu-grid4 { gap: 10px; }
+    .edu-feat h4 { font-size: 16px; }
+    .edu-master { max-height: 46vh; }
+    .pc-price { font-size: 48px; }
+    .contact-mail { font-size: 26px; }
+    .contact-links { flex-direction: column; gap: 12px; align-items: center; }
+  }
+  .video-player {
+    position: fixed; inset: 0; z-index: 200;
+    display: flex; align-items: center; justify-content: center;
+    padding: 44px;
+    opacity: 0; pointer-events: none;
+    background: transparent;
+    transition: opacity 0.46s ease;
+  }
+  .video-player.open {
+    opacity: 1; pointer-events: auto;
+  }
+  .video-player.playback {
+    background: transparent;
+  }
+  /* Frame mode: the player lives ON the 3D film (baked into the texture), so
+     this overlay is just a transparent click-catcher — no flat HTML controls. */
+  .video-player.frame-mode {
+    display: block; padding: 0;
+    background: transparent;
+    cursor: pointer;
+  }
+  .video-player.frame-mode .video-shell { display: none; }
+  /* Cinema mode: the real <video> fills the screen at native aspect with the
+     HTML player chrome on top (instead of the 3D on-film player). */
+  .video-player.cinema {
+    display: flex; align-items: center; justify-content: center;
+    padding: 0;
+    background: rgba(2,2,5,0.97);
+  }
+  .video-player.cinema .video-shell {
+    display: block; position: relative;
+    width: 100vw; height: 100vh;
+    aspect-ratio: auto;
+  }
+  .video-player.cinema .video-shell video {
+    opacity: 1 !important;
+    width: 100%; height: 100%;
+    object-fit: contain;
+  }
+  .video-player.cinema .player-top { padding: 22px 26px 46px; }
+  .video-player.cinema .player-controls { padding: 50px 28px 26px; }
+  /* Cinematic vignette for the showreel — lives INSIDE the player, above the
+     <video> but BELOW the chrome (z-index below), so it frames the picture
+     without ever dimming the buttons/scrubber. Only shown in cinema mode. */
+  .player-vignette { display: none; position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+  .video-player.cinema .player-vignette {
+    display: block;
+    box-shadow: inset 0 0 140px rgba(0,0,0,0.82), inset 0 0 34px rgba(216,164,88,0.08);
+  }
+  .video-player.cinema .player-vignette::before,
+  .video-player.cinema .player-vignette::after {
+    content: ''; position: absolute; left: 0; right: 0; height: 6vh;
+    background: linear-gradient(180deg, rgba(2,2,5,0.9) 0%, rgba(2,2,5,0.7) 50%, rgba(2,2,5,0) 100%);
+  }
+  .video-player.cinema .player-vignette::before { top: 0; }
+  .video-player.cinema .player-vignette::after { bottom: 0; transform: rotate(180deg); }
+  /* Chrome sits above the vignette. */
+  .player-top, .player-controls { z-index: 2; }
+  .video-shell {
+    position: relative;
+    width: min(82vw, 1180px);
+    aspect-ratio: 4 / 2.3;
+    background: transparent;
+    box-shadow: none;
+    overflow: hidden;
+  }
+  .video-player.playback .video-shell {
+    background: transparent;
+    box-shadow: none;
+  }
+  .video-shell video {
+    width: 100%; height: 100%;
+    display: block; object-fit: contain;
+    background: #000;
+    opacity: 0;
+    transition: opacity 0.28s ease;
+  }
+  .video-player.playback .video-shell video {
+    opacity: 0;
+  }
+  .player-top {
+    position: absolute; left: 0; right: 0; top: 0;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 20px 40px;
+    background: linear-gradient(180deg, rgba(0,0,0,0.52), transparent);
+    pointer-events: none;
+  }
+  .player-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: rgba(248,239,224,0.84);
+  }
+  .player-top .player-btn { pointer-events: auto; }
+  .player-controls {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    display: grid; grid-template-columns: auto 1fr auto auto auto;
+    gap: 14px; align-items: center;
+    padding: 42px 20px 18px;
+    background: linear-gradient(0deg, rgba(0,0,0,0.62), transparent);
+  }
+  .player-btn {
+    width: 38px; height: 38px;
+    border: 1px solid rgba(248,239,224,0.28);
+    border-radius: 999px;
+    background: rgba(2,2,5,0.62);
+    color: var(--text);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    padding: 0;
+    transition: border-color 0.2s, box-shadow 0.2s, color 0.2s;
+  }
+  .player-btn svg {
+    width: 16px; height: 16px; display: block;
+  }
+  .player-btn:hover {
+    border-color: rgba(216,164,88,0.72);
+    box-shadow: 0 0 24px rgba(216,164,88,0.24);
+    color: #ffe7bf;
+  }
+  .player-range {
+    width: 100%;
+    accent-color: var(--accent);
+    cursor: pointer;
+  }
+  .timecode {
+    min-width: 96px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: rgba(248,239,224,0.76);
+    text-align: right;
+  }
+  .volume {
+    width: 96px;
+  }
+  /* ===== Section indicator (right rail) ===== */
+  .sec-nav {
+    position: fixed; right: 34px; top: 50%; transform: translateY(-50%);
+    z-index: 90; display: flex; flex-direction: column; gap: 18px;
+    opacity: 0; pointer-events: none; transition: opacity .4s;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .sec-nav.show { opacity: 1; pointer-events: auto; }
+  .sec-dot {
+    display: flex; align-items: center; gap: 12px; cursor: pointer;
+    background: none; border: none; padding: 0; color: var(--text-dim);
+    flex-direction: row-reverse;
+  }
+  .sec-dot .sec-tick {
+    width: 26px; height: 2px; background: rgba(248,239,224,0.3);
+    transition: width .3s, background .3s, box-shadow .3s;
+  }
+  .sec-dot .sec-label {
+    font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+    opacity: 0; transform: translateX(6px); transition: opacity .3s, transform .3s, color .3s;
+    white-space: nowrap;
+  }
+  .sec-dot:hover .sec-label { opacity: 1; transform: translateX(0); }
+  .sec-dot.active .sec-tick {
+    width: 44px; background: var(--accent); box-shadow: 0 0 14px rgba(216,164,88,0.7);
+  }
+  .sec-dot.active .sec-label { opacity: 1; transform: translateX(0); color: var(--text); }
+  /* ===== Shutter / film-gate transition between deck sections =====
+     Two black blades close from top & bottom (like a camera shutter / film gate),
+     meet in the middle, then snap open — masking the section swap behind them. */
+  /* z-index 105: ABOVE the hero (100) so the same iris cut that swaps deck
+     sections can also close over the portrait and hand off to the film. Stays
+     below the cinema-frame border (118+). */
+  .shutter { position: fixed; inset: 0; z-index: 105; pointer-events: none; }
+  .shutter-blade {
+    position: absolute; left: 0; right: 0; height: 52%;
+    background: #020205;
+    transform: scaleY(0); will-change: transform;
+  }
+  .shutter-blade.top    { top: 0;    transform-origin: top; }
+  .shutter-blade.bottom { bottom: 0; transform-origin: bottom; }
+  /* thin warm seam where the blades meet, like a film frame line */
+  .shutter-blade.top::after, .shutter-blade.bottom::after {
+    content: ''; position: absolute; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(216,164,88,0.55), transparent);
+    opacity: 0;
+  }
+  .shutter-blade.top::after    { bottom: 0; }
+  .shutter-blade.bottom::after { top: 0; }
+  .shutter.closing .shutter-blade { transform: scaleY(1); transition: transform .26s cubic-bezier(.6,0,.4,1); }
+  .shutter.closing .shutter-blade::after { opacity: 1; transition: opacity .1s .18s; }
+  .shutter.opening .shutter-blade { transform: scaleY(0); transition: transform .34s cubic-bezier(.2,.7,.2,1); }
+  /* ===== Custom cursor ===== */
+  @media (hover: hover) and (pointer: fine) {
+    /* Hide EVERY native cursor (incl. #canvas grab/grabbing and .trust-track,
+       whose :active rules used to win on specificity and show a 2nd cursor when
+       you pressed a frame). Only our custom dot+ring is ever visible. */
+    * { cursor: none !important; }
+    /* top/left:0 — JS positions them with translate(x,y); any non-zero top here
+       would offset the custom cursor from the real pointer. Start hidden via
+       opacity, revealed on first pointermove (avoids the corner flash). */
+    .cursor-dot, .cursor-ring { position: fixed; top: 0; left: 0; z-index: 9999; pointer-events: none; border-radius: 50%; opacity: 0; transition: opacity .2s; }
+    /* White core + dark halo + gold glow => stays visible on both the dark stage
+       and the light "Trusted by" tiles. */
+    .cursor-dot {
+      width: 7px; height: 7px; background: #fff; transform: translate(-50%,-50%);
+      box-shadow: 0 0 0 1.5px rgba(0,0,0,0.45), 0 0 12px 2px rgba(216,164,88,0.85);
+    }
+    .cursor-ring {
+      width: 32px; height: 32px; border: 1.5px solid rgba(216,164,88,0.8);
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.28), inset 0 0 0 1px rgba(0,0,0,0.18);
+      transform: translate(-50%,-50%); transition: width .22s, height .22s, background .22s, border-color .22s;
+    }
+    .cursor-ring.hot { width: 56px; height: 56px; background: rgba(216,164,88,0.14); border-color: var(--accent); }
+  }
+  @media (max-width: 900px) {
+    .about h2 { font-size: 40px; }
+    .about p { font-size: 16px; }
+    .title-block { padding: 0 16px; }
+    .title-block .film-title { font-size: 42px; }
+    .title-block .meta { font-size: 10px; flex-wrap: wrap; padding: 0 12px; }
+    .controls { bottom: calc(24px + env(safe-area-inset-bottom)); gap: 20px; }
+    .arrow { width: 46px; height: 46px; }
+    .dot { width: 8px; height: 8px; }   /* finger-sized frame dots */
+    .dots { gap: 12px; }
+    .video-player { padding: 14px; }
+    .player-controls { grid-template-columns: auto 1fr auto auto; gap: 10px; padding: 40px 12px 12px; }
+    .volume { display: none; }
+    .timecode { min-width: 78px; font-size: 10px; }
+    .sec-nav { right: calc(12px + env(safe-area-inset-right)); gap: 8px; }
+    .sec-dot { padding: 7px 0; }        /* bigger tap targets */
+    .sec-dot .sec-label { display: none; }
+    .hero-sub { font-size: 14px; }
+    /* deepen the veil behind the centred copy so it reads over the console */
+    .hero-veil {
+      background:
+        radial-gradient(ellipse 96% 50% at 50% 44%, rgba(2,2,5,0.72) 0%, rgba(2,2,5,0.3) 60%, transparent 100%),
+        linear-gradient(180deg, rgba(2,2,5,0.65) 0%, rgba(2,2,5,0.18) 32%, rgba(2,2,5,0.28) 62%, rgba(2,2,5,0.94) 100%);
+    }
+    .hero-tags { justify-content: center; }
+    /* On phones the portrait fills the screen, so the wave + baseline bar would
+       crowd it — drop them and centre the CTA. */
+    .hero-cta { justify-content: center; }
+    .hero-wave, .hero-meta { display: none; }
+    /* The tall B&W profile can't share the narrow screen with the centred copy,
+       so on phones it tucks into the bottom-right corner (the type stays clean
+       above it) and his face still looks in toward the text. */
+    .hero-photo-img {
+      background-size: 84% auto;
+      background-position: right -6% bottom -4%;
+    }
+  /* Landscape phones: keep the title, film and controls from overlapping. */
+  @media (max-height: 540px) {
+    .title-block { margin-top: 6px; }
+    .title-block::before { margin-bottom: 6px; }
+    .title-block .film-title { font-size: 30px; }
+    .title-block .meta { margin-top: 8px; }
+    .controls { bottom: 12px; }
+    .arrow { width: 40px; height: 40px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    body::before { animation: none; }
+    .hero-scroll .sb::after { animation: none; opacity: 1; }
+    .edu-hint .arrow { animation: none; }
+    /* Hero copy appears instantly instead of the stagger cascade, and the
+       "available" status dot stops pulsing. */
+    .hero-kicker, .hero-title, .hero-sub, .hero-tags, .hero-cta {
+      animation: none !important; opacity: 1;
+    }
+    .hero-meta .m-status::before { animation: none; }
+  }
+  /* Touch devices: drop the costliest paint effects. The animated full-screen
+     grain forces a repaint every 0.45s and backdrop blurs are slow on mobile
+     GPUs — static grain + slightly more opaque card backgrounds look the same
+     but free up the frame budget for the 3D film. */
+  @media (pointer: coarse) {
+    body::before { animation: none; }
+    .arrow, .trust-item, .review-card { backdrop-filter: none; }
+    .trust-item, .review-card { background: rgba(9, 11, 15, 0.88); }
+    .arrow { background: rgba(8, 10, 14, 0.8); }
+  }

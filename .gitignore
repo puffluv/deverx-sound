@@ -1,0 +1,9 @@
+# Not deployed / local-only
+works_orig/
+_source/
+tools/
+.claude/
+pass1.log
+pass2.log
+ffmpeg2pass-0.log*
+img/home.png
