@@ -1725,6 +1725,10 @@
     let aboutDwellUntil = 0;
     // Hero intro scrub progress: 0 = video start / hero shown, 1 = handed off to film.
     let heroTarget = 0, heroCurrent = 0;
+    // True once the hero's styles reflect its settled "gone" state — lets the
+    // render loop stop rewriting them every frame. Any heroTarget/heroCurrent
+    // change (including heroCut's instant jump) makes the loop write again.
+    let heroParked = false;
     // Dev/preview hook used by tools/hero_check.js to jump the intro to a given
     // progress (0 = portrait at rest, 1 = handed off to the film).
     window.__hero = function(v){ heroTarget = v; heroCurrent = v; };
@@ -2206,7 +2210,15 @@
       waveTime += dt * wavesSpeed * 0.6;            // base wave speed (lower = calmer)
       const wavesRepaint = (t - lastWavePaint) > 0.031; // ~32fps cap for 2D paints
       const wig = 1.0 - z;              // calm the idle drift as we zoom in
-      if (!playerOpen && !playerOpening && previewActiveIndex === activeIndex) {
+      // Visibility gate: the WebGL film canvas is fully covered by the opaque
+      // hero at the start, and fully faded out once the About/deck takes over
+      // (z≈1). While covered, skip the video decode, the film-texture canvas
+      // repaints + GPU re-uploads AND the GL render itself — they were burning
+      // frame budget on pixels nobody could see (the main phone-lag source).
+      const filmCovered = ss(0.93, 1.0, heroCurrent) < 0.004;  // hero still opaque
+      const filmGone = (1.0 - ss(0.96, 1.0, z)) < 0.004;       // About/deck took over
+      const filmLive = (playerOpening || playerOpen) || (!filmCovered && !filmGone);
+      if (filmLive && !playerOpen && !playerOpening && previewActiveIndex === activeIndex) {
         const previewVideo = previewVideos[activeIndex];
         if (previewVideo && previewVideo.readyState >= 2) {
           const previewEnd = Math.min(PREVIEW_START + PREVIEW_SECONDS, previewVideo.duration || PREVIEW_START + PREVIEW_SECONDS);
@@ -2218,6 +2230,10 @@
               const rp = previewVideo.play();
               if (rp && rp.catch) rp.catch(function () {});
             }
+          } else if (previewVideo.paused) {
+            // Was paused by the visibility gate while covered — resume.
+            const rp = previewVideo.play();
+            if (rp && rp.catch) rp.catch(function () {});
           }
           if (t - lastPreviewPaint > (LITE ? 1 / 18 : 1 / 24)) {
             redrawFilmTexture(aboutFrameMix);
@@ -2228,6 +2244,10 @@
           redrawFilmTexture(0);
           lastPreviewPaint = t;
         }
+      } else if (!filmLive && previewActiveIndex === activeIndex) {
+        // Fully hidden: stop the active preview's decode loop too.
+        const pv = previewVideos[activeIndex];
+        if (pv && !pv.paused) pv.pause();
       }
       if ((playerOpening || playerOpen) && mainVideo.readyState >= 2) playerEverReady = true;
       // Redraw the 3D on-film player (skip in cinema: it's hidden behind it).
@@ -2285,7 +2305,15 @@
       // 15% is the parallax dissolve into the film.
       const heroOut = ss(0.93, 1.0, heroCurrent);   // 0 = hero shown, 1 = film shown
       const filmReveal = heroOut;
-      if (heroEl) {
+      // Once the hero has fully dissolved AND its final styles have been
+      // written once (heroParked), stop rewriting them every frame. heroCut()
+      // jumps heroTarget/heroCurrent in one go, so the settled check alone
+      // would skip the very frame that must write opacity 0 — heroParked
+      // guarantees that last write happens.
+      const heroSettled = heroOut > 0.9995 && Math.abs(heroTarget - heroCurrent) < 0.001;
+      if (!heroSettled) heroParked = false;
+      if (heroEl && !(heroSettled && heroParked)) {
+        heroParked = heroSettled;
         // The push-in parks at 88% — the last 12% is a clean full-screen
         // plateau where the crossfade to the real film happens.
         const dolly = Math.min(1, heroCurrent / 0.88);
@@ -2408,7 +2436,9 @@
       // rise + fade in (staggered) the more centred that panel is, so text keeps
       // resolving as you scroll across. translate uses a CLAMPED scroll (no blank
       // edge) while the reveal uses the raw value (so the cut-in still animates).
-      if (eduRail && eduPanels.length) {
+      // Only animate the rail while Education is on (or next to) the screen —
+      // its nested per-item style loop is wasted work from any other section.
+      if (eduRail && eduPanels.length && Math.abs(deckPos(3) - scrollPos) < 1.3) {
         eduScroll += (eduScrollTarget - eduScroll) * 0.14;
         const END = EDU_PANELS - 1;
         const eW = educationEl.clientWidth || vw;
@@ -2479,7 +2509,10 @@
       camera.position.z = camZ0 * (1.0 - z) + (FRAME_Z + zoomGap) * z;
       camera.lookAt(0, CAM_Y0 * (1.0 - z) + FRAME_Y * z, FRAME_Z * z);
 
-      renderer.render(scene, camera);
+      // Skip the GL render entirely while the film canvas can't be seen (hero
+      // covers it / About-deck replaced it). The first visible frame of any
+      // transition re-renders within the same rAF tick, so nothing flashes.
+      if (filmLive) renderer.render(scene, camera);
 
       // World/camera matrices are current right after render, so the on-film
       // controls hit-rect tracks the active frame exactly.
