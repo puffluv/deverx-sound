@@ -15,15 +15,20 @@ export const LOGOS = [
   { src: 'logos/__ai_Instagram_Post.png.webp',         name: 'K.A.M.I' }
 ];
 
+// previewSrc = a short, muted, 540p re-encode of the same clip (see
+// works/previews/ + tools/make_previews.ps1) used for the film-strip loop.
+// Decoding the full-res masters (some 80MB+/15min) just for a 5s thumbnail
+// loop was the main cause of the mobile lag; src (full quality) is only
+// loaded once the viewer actually opens the player.
 export const projects = [
-  { title: 'Process',      type: 'Sound Design Reel',      palette: ['#0b1018', '#d8a458', '#7bd8ff'], src: 'works/0.Process.mp4' },
-  { title: 'Dune',         type: 'Trailer Sound Redesign', palette: ['#160f0a', '#c98f45', '#f8efe0'], src: 'works/1.Dune.mp4' },
-  { title: 'NEVO Trailer', type: 'Cinematic Trailer',      palette: ['#07111a', '#6fb7d7', '#f0d09a'], src: 'works/2.NEVO Trailer.mp4', previewScale: 1.22 },
-  { title: 'Pressure',     type: 'Tension Sound Design',   palette: ['#09090d', '#a62f32', '#f2d1a0'], src: 'works/3.Pressure.mp4' },
-  { title: 'Dead Space',   type: 'Game Audio Redesign',    palette: ['#05070a', '#6e8c8f', '#dce6df'], src: 'works/4.Dead Space.mp4' },
-  { title: 'Chainsaw Man', type: 'Anime Sound Redesign',   palette: ['#130707', '#d64f2f', '#ffe1a8'], src: 'works/5.Chainsaw Man.mp4' },
-  { title: 'Raihan-002',   type: 'Music Video Sound',      palette: ['#060c10', '#3b8f9d', '#f1eee4'], src: 'works/6.Raihan-002.mp4', previewScale: 1.2 },
-  { title: 'GhostCode',    type: 'Sci-Fi Interface Audio', palette: ['#030709', '#31c6a4', '#d8fff4'], src: 'works/7.GhostCode.mp4' },
+  { title: 'Process',      type: 'Sound Design Reel',      palette: ['#0b1018', '#d8a458', '#7bd8ff'], src: 'works/0.Process.mp4', previewSrc: 'works/previews/0.Process.mp4' },
+  { title: 'Dune',         type: 'Trailer Sound Redesign', palette: ['#160f0a', '#c98f45', '#f8efe0'], src: 'works/1.Dune.mp4', previewSrc: 'works/previews/1.Dune.mp4' },
+  { title: 'NEVO Trailer', type: 'Cinematic Trailer',      palette: ['#07111a', '#6fb7d7', '#f0d09a'], src: 'works/2.NEVO Trailer.mp4', previewSrc: 'works/previews/2.NEVO Trailer.mp4', previewScale: 1.22 },
+  { title: 'Pressure',     type: 'Tension Sound Design',   palette: ['#09090d', '#a62f32', '#f2d1a0'], src: 'works/3.Pressure.mp4', previewSrc: 'works/previews/3.Pressure.mp4' },
+  { title: 'Dead Space',   type: 'Game Audio Redesign',    palette: ['#05070a', '#6e8c8f', '#dce6df'], src: 'works/4.Dead Space.mp4', previewSrc: 'works/previews/4.Dead Space.mp4' },
+  { title: 'Chainsaw Man', type: 'Anime Sound Redesign',   palette: ['#130707', '#d64f2f', '#ffe1a8'], src: 'works/5.Chainsaw Man.mp4', previewSrc: 'works/previews/5.Chainsaw Man.mp4' },
+  { title: 'Raihan-002',   type: 'Music Video Sound',      palette: ['#060c10', '#3b8f9d', '#f1eee4'], src: 'works/6.Raihan-002.mp4', previewSrc: 'works/previews/6.Raihan-002.mp4', previewScale: 1.2 },
+  { title: 'GhostCode',    type: 'Sci-Fi Interface Audio', palette: ['#030709', '#31c6a4', '#d8fff4'], src: 'works/7.GhostCode.mp4', previewSrc: 'works/previews/7.GhostCode.mp4' },
 ];
 
 // Which preview style each project gets (sound-design themed).

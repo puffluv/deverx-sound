@@ -171,11 +171,13 @@
     let currentOffset = 0;
     let activeFrameSForTexture = 0.5;
     let visibleFramesForTexture = N;
-    const PREVIEW_START = 2;
-    const PREVIEW_SECONDS = 5;
+    // previewSrc clips are already trimmed to just the preview window, so the
+    // loop starts at 0 (see data.js).
+    const PREVIEW_START = 0;
+    const PREVIEW_SECONDS = 6;
     const previewVideos = projects.map(function(project, index) {
       const video = document.createElement('video');
-      video.src = encodeURI(project.src);
+      video.src = encodeURI(project.previewSrc || project.src);
       video.muted = true;
       video.loop = true;
       video.playsInline = true;
