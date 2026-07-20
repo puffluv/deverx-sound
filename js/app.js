@@ -49,7 +49,7 @@
     const deckBg = document.getElementById('deckBg');
     const deckBgInner = document.getElementById('deckBgInner');
     const deckOrbs = Array.prototype.slice.call(document.querySelectorAll('.deck-orb'));
-    // Magnetic CTA: the Telegram button eases toward the cursor when near it.
+    // Magnetic CTA: the WhatsApp button eases toward the cursor when near it.
     const ctaBtn = contactsEl.querySelector('.contact-cta');
     if (ctaBtn) {
       contactsEl.addEventListener('pointermove', function(e) {
