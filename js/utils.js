@@ -11,6 +11,25 @@ export const LITE = (window.matchMedia && window.matchMedia('(pointer: coarse)')
 // Smoothstep between a..b.
 export function ss(a, b, x) { x = Math.max(0, Math.min(1, (x - a) / (b - a))); return x * x * (3 - 2 * x); }
 
+// Exponential smoothing that does NOT depend on frame rate.
+//
+// Every transition here used to be `cur += (target - cur) * 0.08`, applied once
+// per rendered frame. That silently ties the SPEED of the whole site to the
+// machine: a 120Hz display runs every ease twice as fast as intended, and a
+// laptop dropping to 20fps takes three times as long to finish the same move —
+// which is a large part of why the site "felt" slow on weak hardware, on top of
+// being slow. `k` is the old per-frame factor at 60fps; the pow() converts it
+// to the equivalent amount of decay for however long this frame actually took.
+export function approach(cur, target, k, dt) {
+  const d = target - cur;
+  // Exponential decay is asymptotic: it never actually arrives. Several gates
+  // downstream only fire at the very end of a move (the "film is fully hidden,
+  // stop rendering WebGL" one, for instance), so snap once the remainder is
+  // below a pixel's worth of anything.
+  if (d > -0.0005 && d < 0.0005) return target;
+  return cur + d * (1 - Math.pow(1 - k, dt * 60));
+}
+
 export function easeOutExpo(a) { return a >= 1 ? 1 : 1 - Math.pow(2, -10 * a); }
 
 // Windowed reveal progress: 0 until `delay`, eases to 1 over `win`.

@@ -2,7 +2,7 @@
   // is guaranteed to run before any module. The bulk of the experience — the
   // Three.js film strip, navigation, the on-film player and the render loop —
   // lives here; the self-contained pieces are imported from sibling modules.
-  import { REDUCED_MOTION, LITE, ss, easeOutExpo, rev, fmtTime, splitWords,
+  import { REDUCED_MOTION, LITE, ss, easeOutExpo, approach, rev, fmtTime, splitWords,
            normHex, hexToRgb, rgba, darken, lum, mulberry32 } from './utils.js';
   import { projects, FRAME_KINDS, ICON_PLAY, ICON_PAUSE, ICON_CLOSE, ICON_EXPAND } from './data.js';
   import { initLogoMarquee } from './logo-marquee.js';
@@ -48,22 +48,6 @@
     const contactsEl = document.getElementById('contacts');
     const deckBg = document.getElementById('deckBg');
     const deckBgInner = document.getElementById('deckBgInner');
-    const deckOrbs = Array.prototype.slice.call(document.querySelectorAll('.deck-orb'));
-    // Magnetic CTA: the WhatsApp button eases toward the cursor when near it.
-    const ctaBtn = contactsEl.querySelector('.contact-cta');
-    if (ctaBtn) {
-      contactsEl.addEventListener('pointermove', function(e) {
-        const r = ctaBtn.getBoundingClientRect();
-        const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-        const dx = e.clientX - cx, dy = e.clientY - cy;
-        const dist = Math.hypot(dx, dy);
-        const pull = Math.max(0, 1 - dist / 360);     // attracts within ~360px
-        ctaBtn.style.transform = 'translate(' + (dx * 0.5 * pull).toFixed(1) + 'px,' + (dy * 0.5 * pull).toFixed(1) + 'px) scale(' + (1 + 0.06 * pull).toFixed(3) + ')';
-      });
-      contactsEl.addEventListener('pointerleave', function() {
-        ctaBtn.style.transform = 'translate(0,0)';
-      });
-    }
     // === Premium scroll-reveal ===
     // Headings split into words that rise from behind a mask; kickers "track in"
     // (letters un-spread); cards/items rise + scale (or slide) with expo easing
@@ -87,7 +71,17 @@
     // p = how centred the section is (0..1). px/py = smoothed mouse (-0.5..0.5).
     // Each layer drifts by its own depth -> real parallax; cards also tilt in 3D
     // and resolve from a blur, which is what reads as "expensive".
+    // True when a set of inputs is unchanged since the last call for this key.
+    function settled(store, a, b, c) {
+      if (store.a === a && store.b === b && store.c === c) return true;
+      store.a = a; store.b = b; store.c = c;
+      return false;
+    }
+
     function revealSection(s, p, px, py) {
+      // Rounded to the precision actually written out below, so "no visible
+      // change" and "no write" mean the same thing.
+      if (settled(s, Math.round(p * 1000), Math.round(px * 1000), Math.round(py * 1000))) return;
       if (p <= 0.0001) { if (s.hidden) return; s.hidden = true; p = 0; } else { s.hidden = false; }
       // Kicker — furthest back, smallest drift.
       for (let i = 0; i < s.kickers.length; i++) {
@@ -181,22 +175,22 @@
       video.muted = true;
       video.loop = true;
       video.playsInline = true;
-      // Only metadata up front — the big .mov/.mp4 files would otherwise all
-      // download at once and starve whichever frame you navigate to. The active
-      // frame is upgraded to full load on demand in startActivePreview().
-      video.preload = 'metadata';
+      // Nothing up front. Eight simultaneous 'metadata' fetches during the
+      // intro compete with the one clip the viewer is about to actually see;
+      // startActivePreview() promotes the active frame to 'auto' and warms only
+      // its two immediate neighbours.
+      video.preload = 'none';
+      // Stops mobile Safari/Chrome offering these silent 5-second loops to
+      // AirPlay/Cast and to the OS media controls.
+      video.disableRemotePlayback = true;
       video.addEventListener('loadedmetadata', function() {
         try { video.currentTime = Math.min(PREVIEW_START, Math.max(0, (video.duration || PREVIEW_START) - 0.1)); } catch (err) {}
       });
-      video.addEventListener('seeked', function() {
-        redrawFilmTexture(lastAboutMix < 0 ? 0 : lastAboutMix);
-      });
-      video.addEventListener('loadeddata', function() {
-        redrawFilmTexture(lastAboutMix < 0 ? 0 : lastAboutMix);
-      });
-      video.addEventListener('error', function() {
-        redrawFilmTexture(lastAboutMix < 0 ? 0 : lastAboutMix);
-      });
+      // These land on the PAUSED neighbours, i.e. the static atlas. Flag it and
+      // let the render loop fold every pending change into one rebuild.
+      video.addEventListener('seeked', markAtlasDirty);
+      video.addEventListener('loadeddata', markAtlasDirty);
+      video.addEventListener('error', markAtlasDirty);
       return video;
     });
     let previewActiveIndex = -1;
@@ -226,6 +220,9 @@
     const loadingEl = document.getElementById('loading');
     loadingEl.textContent = 'Loading films…';
     let loadingHidden = false;
+    // Start the card's staggered rise on the next frame — it depends on
+    // nothing but the stylesheet and the portrait, both already here.
+    requestAnimationFrame(function() { document.body.classList.add('hero-in'); });
 
     // ============ THREE.JS ============
     const canvas = document.getElementById('canvas');
@@ -233,7 +230,6 @@
     // Hero intro layer: a real 3D mixing-console scene (built below in setupHero).
     const heroEl = document.getElementById('hero');
     const heroContent = document.getElementById('heroContent');
-    const heroScroll = document.getElementById('heroScroll');
     const heroPhotoImg = document.getElementById('heroPhotoImg');
     // (The gold hero waveform lives in hero-wave.js.)
     const scene = new THREE.Scene();
@@ -242,13 +238,14 @@
     camera.position.set(0, 0.3, 14.1);
     camera.lookAt(0, 0, 0);
 
-    // preserveDrawingBuffer lets the hero's little screen copy this live film
-    // canvas (via drawImage) so it shows the REAL film, not an imitation.
     const renderer = new THREE.WebGLRenderer({
-      canvas, antialias: !LITE, alpha: true, preserveDrawingBuffer: true,
+      canvas, antialias: !LITE, alpha: true,
       powerPreference: 'high-performance'
     });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, LITE ? 1.5 : 2));
+    // Pixel ratio is the single biggest GL lever: every 0.25 of ratio is a
+    // ~12% fill-rate change. The film is a soft, grainy, out-of-focus object —
+    // it gains nothing from 2x, and laptops/phones pay for it in every frame.
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, LITE ? 1.25 : 1.6));
     renderer.setSize(stage.clientWidth, stage.clientHeight);
 
     scene.add(new THREE.AmbientLight(0xd8c4a8, 0.52));
@@ -475,10 +472,6 @@
       }
     }
 
-    // ============ ABOUT IMAGE ============
-    const canUseImageInWebGL = window.location.protocol !== 'file:';
-    const aboutImage = new Image(); // intentionally empty — fallback draws waves
-
     // ============ ANIMATED SOUND-WAVE SURFACE (fullscreen background) ============
     // ONE waveform renderer (drawAboutSoundFallback, defined below) paints both
     // the active film frame's About morph AND this fullscreen background, so they
@@ -496,7 +489,7 @@
         // Cap the backing-store width so the per-frame waveform paint stays cheap.
         const cssW = wc.clientWidth  || window.innerWidth;
         const cssH = wc.clientHeight || window.innerHeight;
-        const scale = Math.min(1.0, 1280 / Math.max(1, cssW)); // cap backing-store size
+        const scale = Math.min(1.0, (LITE ? 720 : 1100) / Math.max(1, cssW));
         wW = wc.width  = Math.round(cssW * scale);
         wH = wc.height = Math.round(cssH * scale);
       }
@@ -506,15 +499,6 @@
         draw: function(t) { drawAboutSoundFallback(wx, 0, 0, wW, wH, t); }
       };
     })();
-
-    function drawCoverImage(ctx, image, x, y, w, h) {
-      const scale = Math.max(w / image.naturalWidth, h / image.naturalHeight);
-      const sw = w / scale;
-      const sh = h / scale;
-      const sx = (image.naturalWidth - sw) * 0.5;
-      const sy = (image.naturalHeight - sh) * 0.5;
-      ctx.drawImage(image, sx, sy, sw, sh, x, y, w, h);
-    }
 
     function drawCoverVideo(ctx, video, x, y, w, h, extraScale) {
       if (!video || video.readyState < 2 || !video.videoWidth || !video.videoHeight) return false;
@@ -527,14 +511,20 @@
       return true;
     }
 
-    // A glowing, animated AUDIO WAVEFORM — the DAW/SoundCloud look: a mirrored
-    // bar field (sample magnitudes around a centre line) with loud/quiet bursts
-    // that scroll with `t`, plus softer depth-echo layers behind for richness,
-    // and a bright oscilloscope line on top. Used for the film-frame morph AND
-    // the fullscreen About background, so they match as the frame zooms out.
+    // A mirrored bar field around a centre line — the shape you see in any
+    // DAW. Used for the film-frame morph AND the fullscreen background, so the
+    // two match as the frame zooms out.
+    //
+    // Two things changed here, and they were the same change:
+    //   * it no longer uses ctx.shadowBlur. Three layers x ~140 bars was ~420
+    //     shadow-blurred fillRects per paint, and shadowBlur is the single most
+    //     expensive operation in canvas2d — it was most of the CPU cost of a
+    //     frame. The glow is now a wide, low-alpha bar drawn behind a narrow
+    //     bright one, which reads the same and costs two plain fillRects.
+    //   * the neon cyan + hot-orange peaks are gone. One warm accent against a
+    //     neutral ground; the "loud" moments read through height and brightness
+    //     rather than by changing colour.
     function audioSample(u, tt) {
-      // u: 0..1 across the surface, tt: animation time. The window scrolls with
-      // tt so the wave "plays"; an envelope creates realistic loud/quiet sections.
       const s = u * 46.0 + tt * 5.5;
       const v = Math.sin(s * 0.50) * 0.55 +
                 Math.sin(s * 1.27) * 0.32 +
@@ -548,60 +538,61 @@
       t = t || 0;
       const midY = y + h * 0.5;
 
-      // deep background
-      const bg = ctx.createRadialGradient(x+w*0.5, y+h*0.46, 0, x+w*0.5, y+h*0.5, Math.max(w,h)*0.85);
-      bg.addColorStop(0,   '#0c2032');
-      bg.addColorStop(0.55,'#07121c');
-      bg.addColorStop(1,   '#020205');
+      // Deep, neutral ground — no colour cast.
+      const bg = ctx.createLinearGradient(x, y, x, y + h);
+      bg.addColorStop(0,    '#0d0e12');
+      bg.addColorStop(0.5,  '#121319');
+      bg.addColorStop(1,    '#08080a');
       ctx.fillStyle = bg;
       ctx.fillRect(x, y, w, h);
 
       ctx.save();
       ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip();
-      ctx.globalCompositeOperation = 'lighter'; // additive glow
 
-      const COUNT = Math.max(56, Math.round(w / 9));
-      function drawBars(tt, hScale, rgb, alpha, blur, hot) {
-        const slot = w / COUNT;
-        const bw = Math.max(1.5, slot * 0.46);
-        ctx.shadowBlur = blur;
+      // Bar count scales with width but is capped: past ~110 bars the field
+      // reads as a solid block anyway, and every extra bar is two fillRects.
+      const COUNT = Math.max(48, Math.min(LITE ? 72 : 110, Math.round(w / 12)));
+      const slot = w / COUNT;
+      const bw = Math.max(1.5, slot * 0.4);
+      const glowW = bw * 2.6;
+
+      function drawBars(tt, hScale, rgb, alpha, glow) {
         for (let i = 0; i < COUNT; i++) {
           const u = i / (COUNT - 1);
-          const a = audioSample(u, tt);
-          const mag = Math.min(1.0, Math.abs(a));
-          let bh = mag * h * 0.46 * hScale;
+          const mag = Math.min(1.0, Math.abs(audioSample(u, tt)));
+          let bh = mag * h * 0.38 * hScale;
           if (bh < 1) bh = 1;
           const cx = x + u * w;
-          const col = (hot && mag > 0.72) ? '255,111,60' : rgb; // hot orange peaks
-          const aa = alpha * (0.35 + 0.65 * mag);
-          ctx.fillStyle   = 'rgba(' + col + ',' + aa.toFixed(3) + ')';
-          ctx.shadowColor = 'rgba(' + col + ',' + alpha.toFixed(3) + ')';
-          ctx.fillRect(cx - bw * 0.5, midY - bh, bw, bh * 2); // mirrored around centre
+          const aa = alpha * (0.32 + 0.68 * mag);
+          if (glow) {
+            // The "glow": one wide, very faint bar behind the solid one.
+            ctx.fillStyle = 'rgba(' + rgb + ',' + (aa * 0.22).toFixed(3) + ')';
+            ctx.fillRect(cx - glowW * 0.5, midY - bh, glowW, bh * 2);
+          }
+          ctx.fillStyle = 'rgba(' + rgb + ',' + aa.toFixed(3) + ')';
+          ctx.fillRect(cx - bw * 0.5, midY - bh, bw, bh * 2);
         }
       }
 
-      // depth echoes (back) -> main waveform (front). shadowBlur is the costly
-      // part, so echoes use little/none and only the front layer glows brightly.
-      drawBars(t * 0.6 + 2.1, 0.55, '123,216,255', 0.09, 0,  false); // far cyan echo
-      drawBars(t * 0.8 + 1.0, 0.78, '216,164,88',  0.17, 3,  false); // mid amber
-      drawBars(t,             1.00, '123,216,255', 0.50, 7,  true);  // front + hot peaks
+      // One dim echo behind, one warm field in front. Kept well under half
+      // strength: this sits BEHIND the About copy, so it has to read as a
+      // texture in the room, not as the subject.
+      drawBars(t * 0.75 + 1.6, 0.58, '150,156,168', 0.11, false);
+      drawBars(t,              0.92, '201,160,99',  0.4,  true);
 
-      // oscilloscope line tracing the peaks (dimmed)
-      ctx.shadowBlur  = 6;
-      ctx.shadowColor = 'rgba(216,236,255,0.5)';
-      ctx.strokeStyle = 'rgba(233,244,255,0.55)';
-      ctx.lineWidth   = Math.max(1.5, h * 0.006);
+      // Oscilloscope line tracing the signal.
+      ctx.strokeStyle = 'rgba(236,231,222,0.26)';
+      ctx.lineWidth = Math.max(1, h * 0.004);
       ctx.beginPath();
-      for (let px = 0; px <= w; px += 3) {
-        const u = px / w;
-        const yy = midY - audioSample(u, t) * h * 0.30;
+      const step = Math.max(3, Math.round(w / 320));
+      for (let px = 0; px <= w; px += step) {
+        const yy = midY - audioSample(px / w, t) * h * 0.27;
         px === 0 ? ctx.moveTo(x + px, yy) : ctx.lineTo(x + px, yy);
       }
       ctx.stroke();
 
-      // faint zero-axis baseline
-      ctx.shadowBlur = 0;
-      ctx.strokeStyle = 'rgba(123,216,255,0.16)';
+      // Zero-axis baseline.
+      ctx.strokeStyle = 'rgba(236,231,222,0.1)';
       ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(x, midY); ctx.lineTo(x + w, midY); ctx.stroke();
 
@@ -629,6 +620,20 @@
     }
 
     // ============ FILM STRIP TEXTURE ============
+    //
+    // The strip used to be ONE canvas (8 frames x 1024px = 8192x1024) that was
+    // fully redrawn AND fully re-uploaded to the GPU on every preview repaint.
+    // At 24fps that is ~33MB/frame of texture traffic — about 800MB/s — which
+    // is what pinned integrated GPUs (MacBook Air, phones) to single digits.
+    //
+    // It is now split in two:
+    //   * the ATLAS  — posters, the neighbours' frozen stills, sprocket holes.
+    //     Static. Rebuilt only when the active frame changes or a neighbour
+    //     first decodes, so it is uploaded a handful of times per session.
+    //   * the LIVE TILE — one frame-sized canvas carrying whatever is actually
+    //     moving: the playing preview, the on-film player UI, the About waves.
+    //     Uploaded every repaint, but it is 1/24th the pixels.
+    // The fragment shader stamps the tile over the active frame's slot.
     const filmCanvasState = {
       canvas: null,
       ctx: null,
@@ -639,8 +644,15 @@
       framePxH: 0,
       totalH: 0
     };
+    // The live overlay for the active frame.
+    const liveTile = { canvas: null, ctx: null, tex: null };
     let filmTexture;
     let lastAboutMix = -1;
+    let atlasDirty = false;
+    let lastFreezeAt = 0;
+    // Coalesce atlas rebuilds: several <video> events can land in one tick and
+    // each would otherwise trigger a full multi-megabyte re-upload.
+    function markAtlasDirty() { atlasDirty = true; }
 
     function visibleActiveFrameIndex() {
       const visibleU = activeFrameSForTexture * (visibleFramesForTexture / N) + currentOffset;
@@ -648,9 +660,11 @@
       return Math.floor(wrappedU * N);
     }
 
-    // Snapshot the just-drawn video pixels of slot i so we can re-show them if
-    // the video stalls on a later paint (prevents the synthetic-poster flicker).
-    function captureFreeze(i, x, y, w, h) {
+    // Snapshot the active frame's last good video pixels, so a neighbour can be
+    // baked into the atlas with real footage instead of the synthetic poster.
+    function captureFreeze(i) {
+      if (!liveTile.canvas) return;
+      const w = filmCanvasState.framePx, h = filmCanvasState.framePxH;
       let fz = frameFreeze[i];
       if (!fz) {
         fz = document.createElement('canvas');
@@ -659,7 +673,7 @@
       }
       const fctx = fz.getContext('2d');
       fctx.clearRect(0, 0, w, h);
-      fctx.drawImage(filmCanvasState.canvas, x, y, w, h, 0, 0, w, h);
+      fctx.drawImage(liveTile.canvas, 0, 0, w, h, 0, 0, w, h);
     }
 
     function fmtClock(s) {
@@ -746,43 +760,55 @@
       // bottom control bar
       const barH = h * UI_BAR_H;
       const bg = ctx.createLinearGradient(0, y + h - barH, 0, y + h);
-      bg.addColorStop(0, 'rgba(2,2,5,0)');
-      bg.addColorStop(1, 'rgba(2,2,5,0.66)');
+      bg.addColorStop(0, 'rgba(6,6,8,0)');
+      bg.addColorStop(1, 'rgba(6,6,8,0.62)');
       ctx.fillStyle = bg;
       ctx.fillRect(x, y + h - barH, w, barH);
 
-      // big centre play button: idle always; in playback only while paused
+      // Centre play button: idle always; in playback only while paused.
+      // A thin ring, no fill wash, no gold bloom — at this size on a curved
+      // strip the old glowing disc read as a watermark stamped on the footage.
       if (!playing || paused) {
-        const cx = x + w * 0.5, cy = y + h * 0.42;
-        const R = h * 0.14;
+        const cx = x + w * 0.5, cy = y + h * 0.44;
+        const R = h * 0.105;
         ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(8,8,12,0.42)'; ctx.fill();
-        ctx.lineWidth = Math.max(3, R * 0.10);
-        ctx.strokeStyle = 'rgba(248,239,224,0.92)';
-        ctx.shadowColor = 'rgba(216,164,88,0.55)'; ctx.shadowBlur = R * 0.5;
+        ctx.fillStyle = 'rgba(6,6,8,0.3)'; ctx.fill();
+        ctx.lineWidth = Math.max(1.5, R * 0.055);
+        ctx.strokeStyle = 'rgba(236,231,222,0.82)';
         ctx.stroke();
-        ctx.shadowBlur = 0;
-        const tw = R * 0.62, th = R * 0.74;
+        const tw = R * 0.5, th = R * 0.62;
         ctx.beginPath();
-        ctx.moveTo(cx - tw * 0.42, cy - th * 0.5);
-        ctx.lineTo(cx - tw * 0.42, cy + th * 0.5);
-        ctx.lineTo(cx + tw * 0.72, cy);
+        ctx.moveTo(cx - tw * 0.32, cy - th * 0.5);
+        ctx.lineTo(cx - tw * 0.32, cy + th * 0.5);
+        ctx.lineTo(cx + tw * 0.78, cy);
         ctx.closePath();
-        ctx.fillStyle = 'rgba(248,239,224,0.96)';
+        ctx.fillStyle = 'rgba(236,231,222,0.92)';
         ctx.fill();
       }
 
       const lineY = y + h - barH * 0.42;
 
-      // Preview (idle): NO timeline — just a clear, clickable CLICK TO PLAY
-      // centred at the bottom (the whole frame is the click target).
+      // Preview (idle): the frame's own slate — reel position on the left, the
+      // project's discipline on the right. It reads as film leader metadata
+      // instead of a shouty "CLICK TO PLAY" instruction.
       if (!playing) {
-        ctx.fillStyle = 'rgba(248,239,224,0.95)';
-        ctx.font = Math.round(h * 0.055) + 'px "JetBrains Mono", monospace';
-        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = h * 0.03;
-        ctx.fillText('CLICK TO PLAY', x + w * 0.5, lineY);
-        ctx.shadowBlur = 0;
+        const proj = projects[activeIndex];
+        ctx.font = Math.round(h * 0.036) + 'px "JetBrains Mono", monospace';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = 'rgba(236,231,222,0.62)';
+        ctx.textAlign = 'left';
+        ctx.fillText(String(activeIndex + 1).padStart(2, '0') + ' / ' + String(N).padStart(2, '0'),
+                     x + w * 0.045, lineY);
+        ctx.textAlign = 'right';
+        ctx.fillStyle = 'rgba(201,160,99,0.85)';
+        ctx.fillText(proj.type.toUpperCase(), x + w * 0.955, lineY);
+        // Hairline above the slate line, inset like a title-safe guide.
+        ctx.strokeStyle = 'rgba(236,231,222,0.16)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(x + w * 0.045, lineY - h * 0.045);
+        ctx.lineTo(x + w * 0.955, lineY - h * 0.045);
+        ctx.stroke();
         ctx.restore();
         return;
       }
@@ -897,8 +923,12 @@
       ctx.restore();
     }
 
-    function redrawFilmTexture(aboutMix) {
+    // The static layer: every frame's poster, the neighbours' frozen stills and
+    // the punched sprocket holes. Expensive (8 full-frame draws + 112 punches)
+    // but it only runs on a navigation or a first decode, never per frame.
+    function rebuildAtlas() {
       if (!filmCanvasState.ctx) return;
+      atlasDirty = false;
 
       const c = filmCanvasState.canvas;
       const ctx = filmCanvasState.ctx;
@@ -916,57 +946,26 @@
       ctx.fillStyle = '#0a0a0a';
       ctx.fillRect(0, 0, TOTAL_W, TOTAL_H);
 
-      const aboutFrameIndex = visibleActiveFrameIndex();
       for (let i = 0; i < N; i++) {
-        const frameCanvas = makeFrameTexture(projects[i], i);
         const x = i * SLOT_PX + GAP_PX / 2;
         const y = SPROCKET_PX;
-        ctx.drawImage(frameCanvas, x, y, FRAME_PX, FRAME_PX_H);
+        ctx.drawImage(makeFrameTexture(projects[i], i), x, y, FRAME_PX, FRAME_PX_H);
 
-        const video = previewVideos[i];
-        const playerVideoInFrame = (playerOpening || playerOpen) && i === activeIndex && mainVideo.readyState >= 2;
-        const sourceVideo = playerVideoInFrame ? mainVideo : video;
-        const scaleForFrame = playerVideoInFrame ? 1 : (projects[i].previewScale || 1);
-        let drewVideo = drawCoverVideo(ctx, sourceVideo, x, y, FRAME_PX, FRAME_PX_H, scaleForFrame);
-        if (drewVideo) {
-          // Only the active frame keeps moving, so only refresh its freeze every
-          // paint; the paused neighbours just need one capture on first paint.
-          if (i === activeIndex || !frameFreeze[i]) captureFreeze(i, x, y, FRAME_PX, FRAME_PX_H);
-          frameHasVideo[i] = true;
-        } else if (frameHasVideo[i] && frameFreeze[i]) {
-          ctx.drawImage(frameFreeze[i], x, y, FRAME_PX, FRAME_PX_H);
-          drewVideo = true;
+        // Neighbours are paused on their first decoded frame; show that still,
+        // or the last one we froze, rather than the synthetic poster.
+        let drew = false;
+        if (i !== activeIndex) {
+          drew = drawCoverVideo(ctx, previewVideos[i], x, y, FRAME_PX, FRAME_PX_H, projects[i].previewScale || 1);
+          if (drew) { frameHasVideo[i] = true; }
+          else if (frameFreeze[i]) { ctx.drawImage(frameFreeze[i], x, y, FRAME_PX, FRAME_PX_H); drew = true; }
+        } else if (frameFreeze[i]) {
+          // Sits under the live tile, but shows through for the instant between
+          // a navigation and the tile's next paint.
+          ctx.drawImage(frameFreeze[i], x, y, FRAME_PX, FRAME_PX_H); drew = true;
         }
-        if (drewVideo) {
-          ctx.save();
-          ctx.globalCompositeOperation = 'source-over';
-          ctx.fillStyle = i === activeIndex ? 'rgba(0,0,0,0.02)' : 'rgba(0,0,0,0.22)';
+        if (drew && i !== activeIndex) {
+          ctx.fillStyle = 'rgba(0,0,0,0.26)';    // neighbours sit back
           ctx.fillRect(x, y, FRAME_PX, FRAME_PX_H);
-          ctx.restore();
-        }
-
-        // On-film player UI, baked into the texture so it curves with the strip.
-        // Only when fully open (not mid-zoom) so it doesn't flash during the
-        // open/close transition; hidden entirely in cinema (fullscreen) mode.
-        if (i === activeIndex && !playerCinema) {
-          if (playerOpen) {
-            drawFrameUI(ctx, x, y, FRAME_PX, FRAME_PX_H, 'playing');
-          } else if (!playerOpening && filmZoom < 0.06) {
-            drawFrameUI(ctx, x, y, FRAME_PX, FRAME_PX_H, 'idle');
-          }
-        }
-
-        if (i === aboutFrameIndex && aboutMix > 0.001) {
-          ctx.save();
-          ctx.globalAlpha = aboutMix;
-          if (canUseImageInWebGL && aboutImage.complete && aboutImage.naturalWidth > 0) {
-            drawCoverImage(ctx, aboutImage, x, y, FRAME_PX, FRAME_PX_H);
-          } else {
-            // Animated waves, drawn INTO the active frame -> clipped to it and
-            // bulging with it (framed exactly like the video preview).
-            drawAboutSoundFallback(ctx, x, y, FRAME_PX, FRAME_PX_H, waveTime);
-          }
-          ctx.restore();
         }
       }
 
@@ -974,31 +973,81 @@
       const HOLES_PER_SLOT = 7;
       const HOLE_SIZE = Math.round(SPROCKET_PX * 0.42);
       const holeSpacing = SLOT_PX / HOLES_PER_SLOT;
-
       ctx.globalCompositeOperation = 'destination-out';
       for (let i = 0; i < N; i++) {
         const slotStartX = i * SLOT_PX;
         for (let h = 0; h < HOLES_PER_SLOT; h++) {
           const cx = slotStartX + h * holeSpacing + holeSpacing / 2;
-          const x = cx - HOLE_SIZE / 2;
-          const yTop = (SPROCKET_PX - HOLE_SIZE) / 2;
-          ctx.fillRect(x, yTop, HOLE_SIZE, HOLE_SIZE);
-          const yBot = TOTAL_H - SPROCKET_PX + (SPROCKET_PX - HOLE_SIZE) / 2;
-          ctx.fillRect(x, yBot, HOLE_SIZE, HOLE_SIZE);
+          const hx = cx - HOLE_SIZE / 2;
+          ctx.fillRect(hx, (SPROCKET_PX - HOLE_SIZE) / 2, HOLE_SIZE, HOLE_SIZE);
+          ctx.fillRect(hx, TOTAL_H - SPROCKET_PX + (SPROCKET_PX - HOLE_SIZE) / 2, HOLE_SIZE, HOLE_SIZE);
         }
       }
       ctx.globalCompositeOperation = 'source-over';
 
       if (filmTexture) filmTexture.needsUpdate = true;
+      // Keep the shader's live-tile window on the active slot.
+      if (filmMaterialRef) filmMaterialRef.uniforms.uLiveU.value = activeIndex / N;
+    }
+
+    // The moving layer: ONE frame. This is what runs at 15-24fps.
+    function redrawFilmTexture(aboutMix) {
+      if (!liveTile.ctx) return;
+      const ctx = liveTile.ctx;
+      const W = filmCanvasState.framePx;
+      const H = filmCanvasState.framePxH;
+      const i = activeIndex;
+
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.globalAlpha = 1;
+      ctx.clearRect(0, 0, W, H);
+      ctx.drawImage(makeFrameTexture(projects[i], i), 0, 0, W, H);
+
+      const playerVideoInFrame = (playerOpening || playerOpen) && mainVideo.readyState >= 2;
+      const sourceVideo = playerVideoInFrame ? mainVideo : previewVideos[i];
+      const scaleForFrame = playerVideoInFrame ? 1 : (projects[i].previewScale || 1);
+      let drewVideo = drawCoverVideo(ctx, sourceVideo, 0, 0, W, H, scaleForFrame);
+      if (drewVideo) {
+        frameHasVideo[i] = true;
+      } else if (frameHasVideo[i] && frameFreeze[i]) {
+        ctx.drawImage(frameFreeze[i], 0, 0, W, H);
+        drewVideo = true;
+      }
+      if (drewVideo) {
+        ctx.fillStyle = 'rgba(0,0,0,0.02)';
+        ctx.fillRect(0, 0, W, H);
+        // Freeze BEFORE the UI/waves go on, so the still baked into the atlas
+        // is clean footage rather than footage with a play button on it. It is
+        // only a fallback for a stalled decode, so a couple of times a second
+        // is plenty — at the paint rate it was a full frame copy per paint.
+        const nowMs = performance.now();
+        if (nowMs - lastFreezeAt > 400) { captureFreeze(i); lastFreezeAt = nowMs; }
+      } else if (filmZoom < 0.06 && !playerOpen && !playerOpening) {
+        drawLoading(ctx, 0, 0, W, H);
+      }
+
+      if (!playerCinema) {
+        if (playerOpen) drawFrameUI(ctx, 0, 0, W, H, 'playing');
+        else if (!playerOpening && filmZoom < 0.06 && drewVideo) drawFrameUI(ctx, 0, 0, W, H, 'idle');
+      }
+
+      if (aboutMix > 0.001) {
+        ctx.save();
+        ctx.globalAlpha = aboutMix;
+        drawAboutSoundFallback(ctx, 0, 0, W, H, waveTime);
+        ctx.restore();
+      }
+
+      if (liveTile.tex) liveTile.tex.needsUpdate = true;
       lastAboutMix = aboutMix;
     }
 
     function buildFilmTexture() {
-      // The whole strip is ONE canvas re-uploaded to the GPU on every preview
-      // repaint; at 1024px/frame that's ~8200px wide. Phones get 512px/frame —
-      // a quarter of the upload — and the frame is at most ~60% of a small
-      // screen anyway, so it still reads sharp.
-      const FRAME_PX = LITE ? 512 : 1024;
+      // Atlas resolution. Since the atlas is now uploaded only on navigation,
+      // and the live frame is its own small texture, this is purely about how
+      // sharp the NON-active frames look — they are dimmed, curved away and
+      // never more than a thumbnail on screen.
+      const FRAME_PX = LITE ? 384 : 768;
       const GAP_PX = Math.round(FRAME_PX * FRAME_GAP / FRAME_W);
       const SPROCKET_PX = Math.round(FRAME_PX * SPROCKET_H / FRAME_W);
       const SLOT_PX = FRAME_PX + GAP_PX;
@@ -1008,14 +1057,15 @@
 
       const c = document.createElement('canvas');
       c.width = TOTAL_W; c.height = TOTAL_H;
-      const ctx = c.getContext('2d');
+      const ctx = c.getContext('2d', { alpha: true });
 
       const tex = new THREE.CanvasTexture(c);
       tex.wrapS = THREE.RepeatWrapping;
       tex.wrapT = THREE.ClampToEdgeWrapping;
       tex.minFilter = THREE.LinearFilter;
       tex.magFilter = THREE.LinearFilter;
-      tex.anisotropy = LITE ? 4 : renderer.capabilities.getMaxAnisotropy();
+      tex.generateMipmaps = false;
+      tex.anisotropy = LITE ? 1 : 4;
       filmCanvasState.canvas = c;
       filmCanvasState.ctx = ctx;
       filmCanvasState.framePx = FRAME_PX;
@@ -1025,9 +1075,30 @@
       filmCanvasState.framePxH = FRAME_PX_H;
       filmCanvasState.totalH = TOTAL_H;
       filmTexture = tex;
+
+      // The live tile: exactly one frame.
+      const lt = document.createElement('canvas');
+      lt.width = FRAME_PX; lt.height = FRAME_PX_H;
+      liveTile.canvas = lt;
+      liveTile.ctx = lt.getContext('2d', { alpha: true });
+      const ltex = new THREE.CanvasTexture(lt);
+      ltex.wrapS = ltex.wrapT = THREE.ClampToEdgeWrapping;
+      ltex.minFilter = THREE.LinearFilter;
+      ltex.magFilter = THREE.LinearFilter;
+      ltex.generateMipmaps = false;
+      liveTile.tex = ltex;
+
+      rebuildAtlas();
       redrawFilmTexture(0);
       return tex;
     }
+
+    // Assigned once the material exists; rebuildAtlas() keeps the shader's live
+    // window pinned to the active slot.
+    let filmMaterialRef = null;
+    // Change-detection state for the Education rail's per-item write loop.
+    const eduState = {};
+    let eduMoved = true;
 
     filmTexture = buildFilmTexture();
 
@@ -1144,7 +1215,7 @@
     // as the active frame — the big flat arc at the bottom-front.
     const ACTIVE_FRAME_S = findLowerLoopFocusS();
     activeFrameSForTexture = ACTIVE_FRAME_S;
-    redrawFilmTexture(lastAboutMix < 0 ? 0 : lastAboutMix);
+    markAtlasDirty();
 
     // Use a transport frame so the strip keeps a stable orientation through
     // tight turns instead of re-snapping to world up at every sample.
@@ -1237,6 +1308,14 @@
     const filmMaterial = new THREE.ShaderMaterial({
       uniforms: {
         uMap: { value: filmTexture },
+        // The live active frame, stamped over its slot in the atlas (see the
+        // FILM STRIP TEXTURE note). uLiveU is the slot's left edge in atlas-u;
+        // uLiveV0/V1 are the frame band between the sprocket rows.
+        uLive: { value: liveTile.tex },
+        uLiveU: { value: 0 },
+        uLiveW: { value: 1 / N },
+        uLiveV0: { value: filmCanvasState.sprocketPx / filmCanvasState.totalH },
+        uLiveV1: { value: 1 - filmCanvasState.sprocketPx / filmCanvasState.totalH },
         uOffset: { value: 0 },
         uFocusS: { value: ACTIVE_FRAME_S },
         uBulge: { value: 0.92 }
@@ -1274,6 +1353,11 @@
       ].join('\n'),
       fragmentShader: [
         'uniform sampler2D uMap;',
+        'uniform sampler2D uLive;',
+        'uniform float uLiveU;',
+        'uniform float uLiveW;',
+        'uniform float uLiveV0;',
+        'uniform float uLiveV1;',
         'uniform float uFocusS;',
         'varying vec2 vUv;',
         'varying float vS;',
@@ -1281,6 +1365,14 @@
         'void main() {',
         '  vec2 sampleUv = gl_FrontFacing ? vec2(vUv.x, 1.0 - vUv.y) : vUv;',
         '  vec4 c = texture2D(uMap, sampleUv);',
+        // Inside the active slot, the live tile replaces the atlas. Everything
+        // that moves (playing preview, transport UI, About waves) lives there,
+        // so the 8-frame atlas never has to be re-uploaded for animation.
+        '  float fu = fract(sampleUv.x - uLiveU);',
+        '  float fv = (sampleUv.y - uLiveV0) / (uLiveV1 - uLiveV0);',
+        '  if (fu < uLiveW && fv > 0.0 && fv < 1.0) {',
+        '    c = texture2D(uLive, vec2(fu / uLiveW, fv));',
+        '  }',
         '  float edgeBand = clamp(abs(vUv.y - 0.5) * 2.0, 0.0, 1.0);',
         // Concentrate the highlight on (roughly) the single active frame.
         '  float focusBand = 1.0 - smoothstep(0.0, 0.15, abs(vS - uFocusS));',
@@ -1311,6 +1403,9 @@
       depthWrite: true,
       alphaTest: 0.12
     });
+
+    filmMaterialRef = filmMaterial;
+    filmMaterial.uniforms.uLiveU.value = activeIndex / N;
 
     const filmMesh = new THREE.Mesh(ribbonGeom, filmMaterial);
 
@@ -1480,6 +1575,7 @@
       document.getElementById('project-type').textContent = p.type;
       dots.forEach(function(d, j) { d.classList.toggle('active', j === activeIndex); });
       startActivePreview();
+      markAtlasDirty();
       redrawFilmTexture(lastAboutMix < 0 ? 0 : lastAboutMix);
     }
 
@@ -1906,8 +2002,6 @@
       window.addEventListener('touchcancel', function() { live = false; }, { passive: true });
       // Touch devices: the "scroll" hints should say what the finger does.
       if (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) {
-        const hs = heroScroll && heroScroll.querySelector('span:last-child');
-        if (hs) hs.textContent = 'swipe';
         const eh = document.getElementById('eduHint');
         if (eh) eh.innerHTML = 'swipe <span class="arrow">&rarr;</span>';
       }
@@ -1916,8 +2010,6 @@
     // ===== Section indicator + custom cursor =====
     const secNav = document.getElementById('secNav');
     const secDots = Array.prototype.slice.call(secNav.querySelectorAll('.sec-dot'));
-    const cursorDot = document.getElementById('cursorDot');
-    const cursorRing = document.getElementById('cursorRing');
 
     // ===== Camera-shutter / film-gate transition =====
     // Blades snap shut, we hard-cut the deck to the target section while hidden,
@@ -1989,22 +2081,6 @@
         shutterTo(Number(dot.getAttribute('data-sec')));
       });
     });
-    // Custom cursor: dot tracks instantly, ring eases; both grow over interactives.
-    let curX = window.innerWidth / 2, curY = window.innerHeight / 2;
-    let ringX = curX, ringY = curY;
-    if (cursorRing) {
-      window.addEventListener('pointermove', function(e) {
-        curX = e.clientX; curY = e.clientY;
-        cursorDot.style.opacity = '1'; cursorRing.style.opacity = '1';
-        cursorDot.style.transform = 'translate(' + curX + 'px,' + curY + 'px) translate(-50%,-50%)';
-        const hot = e.target && e.target.closest &&
-          e.target.closest('a,button,.review-card,.edu-item,.trust-item,#canvas,.sec-dot');
-        cursorRing.classList.toggle('hot', !!hot);
-      });
-      document.addEventListener('pointerdown', function() { cursorRing.classList.add('hot'); });
-      document.addEventListener('pointerup',   function() { cursorRing.classList.remove('hot'); });
-    }
-
     // Dragging the film strip also counts as "scrolling" -> waves animate.
     window.addEventListener('pointermove', function() {
       if (isDragging) wavesEnergy = Math.min(1, wavesEnergy + 0.06);
@@ -2166,19 +2242,35 @@
     }
 
 
+    let pageHidden = document.hidden;
+    document.addEventListener('visibilitychange', function() {
+      pageHidden = document.hidden;
+      if (pageHidden) {
+        for (let i = 0; i < previewVideos.length; i++) {
+          if (!previewVideos[i].paused) previewVideos[i].pause();
+        }
+      } else {
+        // Don't carry the whole hidden stretch into one giant dt.
+        lastFrameT = 0;
+        if (!playerOpen && !playerOpening) startActivePreview();
+      }
+    });
+
     function animate() {
       requestAnimationFrame(animate);
+      // rAF is already throttled to ~1fps in a hidden tab, so the loop costs
+      // nothing; the decode that visibilitychange stops above is the real cost.
       const t = performance.now() * 0.001;
       const dt = lastFrameT ? Math.min(0.05, t - lastFrameT) : 0.016;
       lastFrameT = t;
 
       // Scroll zoom (eased). 0 = full view, 1 = active frame fills the screen.
-      zoomCurrent += (zoomTarget - zoomCurrent) * 0.08;
+      zoomCurrent = approach(zoomCurrent, zoomTarget, 0.08, dt);
       const z = zoomCurrent;
       filmZoom = z;
 
       // Vertical section-deck position (eased). Only advances once z == 1 (About in).
-      secCurrent += (secTarget - secCurrent) * 0.08;
+      secCurrent = approach(secCurrent, secTarget, 0.08, dt);
       const sec = secCurrent;
 
       // Section indicator: visible only once we're on the About page / deck
@@ -2188,12 +2280,6 @@
       if (deckUiOn) {
         const nearest = Math.round(sec);
         for (let i = 0; i < secDots.length; i++) secDots[i].classList.toggle('active', i === nearest);
-      }
-      // Ease the custom cursor ring toward the pointer (dot already snaps in the
-      // move handler), so it trails with a smooth, premium lag.
-      if (cursorRing) {
-        ringX += (curX - ringX) * 0.18; ringY += (curY - ringY) * 0.18;
-        cursorRing.style.transform = 'translate(' + ringX.toFixed(1) + 'px,' + ringY.toFixed(1) + 'px) translate(-50%,-50%)';
       }
 
       // About-morph mix, computed up-front so the preview repaint below keeps the
@@ -2210,7 +2296,7 @@
       const aboutFull = ss(0.94, 1.0, z);           // 1 == standing on About
       const wavesSpeed = REDUCED_MOTION ? wavesEnergy : Math.max(wavesEnergy, aboutFull);
       waveTime += dt * wavesSpeed * 0.6;            // base wave speed (lower = calmer)
-      const wavesRepaint = (t - lastWavePaint) > 0.031; // ~32fps cap for 2D paints
+      const wavesRepaint = (t - lastWavePaint) > (LITE ? 0.055 : 0.041); // 18fps / 24fps
       const wig = 1.0 - z;              // calm the idle drift as we zoom in
       // Visibility gate: the WebGL film canvas is fully covered by the opaque
       // hero at the start, and fully faded out once the About/deck takes over
@@ -2237,7 +2323,7 @@
             const rp = previewVideo.play();
             if (rp && rp.catch) rp.catch(function () {});
           }
-          if (t - lastPreviewPaint > (LITE ? 1 / 18 : 1 / 24)) {
+          if (t - lastPreviewPaint > (LITE ? 1 / 15 : 1 / 24)) {
             redrawFilmTexture(aboutFrameMix);
             lastPreviewPaint = t;
           }
@@ -2260,11 +2346,10 @@
           lastPreviewPaint = t;
         }
       }
-      // Hide the intro overlay once the first film can actually play.
-      // body.hero-in kicks off the hero copy's staggered rise (CSS-driven).
+      // The overlay belongs to the FILM, which sits behind the hero, so it can
+      // keep waiting on a real decode without holding anything else up.
       if (!loadingHidden && previewVideos[activeIndex] && previewVideos[activeIndex].readyState >= 2) {
         loadingEl.classList.add('hidden');
-        document.body.classList.add('hero-in');
         loadingHidden = true;
       }
       if (playerOpening && z > FRAME_PLAYER_ZOOM * 0.96) showVideoPlayer();
@@ -2289,7 +2374,7 @@
         lastWavePaint = t;
       }
 
-      currentOffset += (targetOffset - currentOffset) * 0.08;
+      currentOffset = approach(currentOffset, targetOffset, 0.08, dt);
       filmMaterial.uniforms.uOffset.value = currentOffset;
       filmMaterial.uniforms.uFocusS.value = ACTIVE_FRAME_S;
       filmGroup.rotation.z = FILM_BASE_ROT_Z + Math.sin(t * 0.28) * 0.014 * wig;
@@ -2302,7 +2387,7 @@
       rimLight.intensity = 0.68 + Math.cos(t * 1.1) * 0.06;
 
       // ===== Hero intro: portrait push-in, then parallax-dissolve into film =====
-      heroCurrent += (heroTarget - heroCurrent) * 0.12;
+      heroCurrent = approach(heroCurrent, heroTarget, 0.12, dt);
       // The push-in completes over the first 85% of the hero progress; the last
       // 15% is the parallax dissolve into the film.
       const heroOut = ss(0.93, 1.0, heroCurrent);   // 0 = hero shown, 1 = film shown
@@ -2337,7 +2422,6 @@
         heroContent.style.transform =
           'translate3d(' + (-deckParX * 44).toFixed(1) + 'px,' +
           (-deckParY * 28 - heroCurrent * 70).toFixed(1) + 'px,0)';
-        if (heroScroll) heroScroll.style.opacity = (1 - ss(0.04, 0.3, heroCurrent)).toFixed(3);
         // Reduced motion: the wave is drawn frozen (t=0) — present but still.
         if (hasHeroWave && heroOut < 0.999) drawHeroWave(REDUCED_MOTION ? 0 : t, 1 - ss(0.02, 0.4, heroCurrent));
       }
@@ -2356,8 +2440,8 @@
       // shift toward the mouse, so we drift the title WITH the mouse like a deep
       // backdrop -> clear relative motion against the strip = a sense of depth.
       // Eased here so it glides instead of snapping on each mouse event.
-      titleParX += (mouseNX - titleParX) * 0.06;
-      titleParY += (mouseNY - titleParY) * 0.06;
+      titleParX = approach(titleParX, mouseNX, 0.06, dt);
+      titleParY = approach(titleParY, mouseNY, 0.06, dt);
       titleBlock.style.transform =
         'translate3d(' + (titleParX * 46).toFixed(1) + 'px,' + (titleParY * 30).toFixed(1) + 'px,0)';
       if (navEl) { navEl.style.opacity = uiFade; navEl.style.pointerEvents = uiPE; }
@@ -2391,8 +2475,8 @@
       // Parallax About text: each layer drifts the opposite way to the waves,
       // by a different amount, so the heading feels closest and the paragraph
       // furthest. mouseNX/NY are ~-0.5..0.5, so these px ranges are sizeable.
-      aboutParX += (mouseNX - aboutParX) * 0.09;
-      aboutParY += (mouseNY - aboutParY) * 0.09;
+      aboutParX = approach(aboutParX, mouseNX, 0.09, dt);
+      aboutParY = approach(aboutParY, mouseNY, 0.09, dt);
       const baseY = 26 * (1 - textIn);
       // container carries only the scroll rise-in + a gentle base drift (it slides
       // up and out of frame as the "Trusted by" section scrolls up from below).
@@ -2441,10 +2525,14 @@
       // Only animate the rail while Education is on (or next to) the screen —
       // its nested per-item style loop is wasted work from any other section.
       if (eduRail && eduPanels.length && Math.abs(deckPos(3) - scrollPos) < 1.3) {
-        eduScroll += (eduScrollTarget - eduScroll) * 0.14;
+        eduScroll = approach(eduScroll, eduScrollTarget, 0.14, dt);
         const END = EDU_PANELS - 1;
         const eW = educationEl.clientWidth || vw;
         const clamped = Math.max(0, Math.min(END, eduScroll));
+        // Once the rail has come to rest, the 7 panels x 14 items below are all
+        // writing the values they already hold.
+        eduMoved = !settled(eduState, Math.round(eduScroll * 1000), eW, 0);
+        if (eduMoved) {
         eduRail.style.transform = 'translate3d(' + (-clamped * eW).toFixed(1) + 'px,0,0)';
         for (let i = 0; i < eduPanels.length; i++) {
           const c = 1 - Math.min(1.4, Math.abs(i - eduScroll));   // centredness
@@ -2458,14 +2546,15 @@
         }
         if (eduBar) eduBar.style.width = (clamped / END * 100).toFixed(1) + '%';
         if (eduHint) eduHint.style.opacity = clamped > 0.12 ? '0' : '';
+        }
       }
       // Logos: the endless client-logo marquee (see logo-marquee.js).
       logoMarquee.update(dt);
 
       // Premium scroll-reveal, scrubbed by how centred each section is, plus a
       // multi-layer mouse parallax (each layer drifts at its own depth).
-      deckParX += (deckMX - deckParX) * 0.07;
-      deckParY += (deckMY - deckParY) * 0.07;
+      deckParX = approach(deckParX, deckMX, 0.07, dt);
+      deckParY = approach(deckParY, deckMY, 0.07, dt);
 
       // Shared deck backdrop. It becomes fully opaque already during the film->
       // About ZOOM (z), so there's a solid dark sheet sitting behind the About
@@ -2476,17 +2565,11 @@
       deckBg.style.opacity = deckShow.toFixed(3);
       if (deckShow > 0.001) {
         // Inner is 5.6 screens tall; scroll it ~0.5x the content travel so the
-        // gradient + orbs glide past noticeably while clearly lagging the deck.
+        // gradient glides past noticeably while clearly lagging the deck.
         const bgTravel = (5.6 - 1) * vh;               // matches .deck-bg-inner height
         const bgY = -(sec / MAX_SEC) * bgTravel * 0.5;
         deckBgInner.style.transform =
           'translate3d(' + (deckParX * 40).toFixed(1) + 'px,' + (bgY + deckParY * 30).toFixed(1) + 'px,0)';
-        for (let i = 0; i < deckOrbs.length; i++) {
-          const depth = 1 + i * 0.5;     // each orb a different parallax depth
-          deckOrbs[i].style.transform =
-            'translate3d(' + (deckParX * 60 * depth).toFixed(1) + 'px,' +
-            (deckParY * 46 * depth + Math.sin(t * 0.3 + i) * 14).toFixed(1) + 'px,0)';
-        }
       }
 
       // TIME-TRIGGERED reveal: once a section is mostly centred its entrance PLAYS
@@ -2504,8 +2587,8 @@
       // Camera dollies in onto the active frame, so the FILM enlarges and that
       // frame fills the screen — then the About layer takes over.
       const parDamp = 1.0 - z * 0.6;
-      camParX += (mouseNX - camParX) * 0.05;
-      camParY += (mouseNY - camParY) * 0.05;
+      camParX = approach(camParX, mouseNX, 0.05, dt);
+      camParY = approach(camParY, mouseNY, 0.05, dt);
       camera.position.x = camParX * 2.6 * parDamp;
       camera.position.y = (CAM_Y0 * (1.0 - z) + FRAME_Y * z) - camParY * 1.5 * parDamp;
       camera.position.z = camZ0 * (1.0 - z) + (FRAME_Z + zoomGap) * z;
@@ -2514,7 +2597,13 @@
       // Skip the GL render entirely while the film canvas can't be seen (hero
       // covers it / About-deck replaced it). The first visible frame of any
       // transition re-renders within the same rAF tick, so nothing flashes.
-      if (filmLive) renderer.render(scene, camera);
+      if (filmLive) {
+        // One rebuild per frame at most, and only while it can be seen: a
+        // burst of <video> 'seeked' events would otherwise each trigger a full
+        // multi-megabyte atlas re-upload.
+        if (atlasDirty) rebuildAtlas();
+        renderer.render(scene, camera);
+      }
 
       // World/camera matrices are current right after render, so the on-film
       // controls hit-rect tracks the active frame exactly.
@@ -2525,7 +2614,6 @@
     // Fallback: never let the overlay hang even if a video stalls.
     setTimeout(function() {
       loadingEl.classList.add('hidden');
-      document.body.classList.add('hero-in');
       loadingHidden = true;
     }, 12000);
   })();
