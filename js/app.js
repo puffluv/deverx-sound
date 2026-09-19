@@ -201,17 +201,56 @@
       video.addEventListener('error', markAtlasDirty);
       return video;
     });
-    // Previews are silent until the viewer asks for sound; browsers would
-    // refuse to start them otherwise, and a portfolio that makes noise on load
-    // is a portfolio people close.
+    // ===== Where the sound actually comes from =====
+    //
+    // The preview clips carry NO audio track — they were re-encoded muted so
+    // the strip could loop cheaply (see data.js). Unmuting them produces
+    // silence, which is exactly what the first version of the sound toggle did.
+    //
+    // So the picture keeps coming from the cheap 540p preview and the sound
+    // comes from the master, through one audio element. Both files share a
+    // timeline (previews are trimmed from the master's head, PREVIEW_START = 0),
+    // so holding the two at the same currentTime keeps them in step. The
+    // masters are all faststart, so this streams the first few seconds rather
+    // than downloading 60MB.
     let soundOn = false;
     const PREVIEW_VOLUME = 0.42;
-    function applyPreviewSound() {
-      for (let i = 0; i < previewVideos.length; i++) {
-        const v = previewVideos[i];
-        const live = soundOn && i === activeIndex;
-        v.muted = !live;
-        if (live) v.volume = PREVIEW_VOLUME;
+    const reelAudio = new Audio();
+    reelAudio.preload = 'none';
+    reelAudio.loop = false;
+    let reelAudioIndex = -1;
+
+    function setReelSource(i) {
+      if (reelAudioIndex === i) return;
+      reelAudioIndex = i;
+      reelAudio.pause();
+      reelAudio.preload = 'auto';
+      reelAudio.src = encodeURI(projects[i].src);   // the master — it has 'soun'
+      try { reelAudio.load(); } catch (err) {}
+    }
+
+    // Hold the soundtrack against the picture. Called every frame while the
+    // strip is live; cheap, and it is the only thing keeping the two files
+    // from drifting apart over a long visit.
+    function driveReelAudio(audible) {
+      if (!soundOn || !audible) {
+        if (!reelAudio.paused) reelAudio.pause();
+        return;
+      }
+      setReelSource(activeIndex);
+      reelAudio.volume = PREVIEW_VOLUME;
+      const pv = previewVideos[activeIndex];
+      const picture = pv ? pv.currentTime : 0;
+      if (reelAudio.readyState >= 2) {
+        if (reelAudio.paused) {
+          const r = reelAudio.play();
+          if (r && r.catch) r.catch(function () {});
+        }
+        // Re-seat on a loop or after any real drift; 0.2s is under the point
+        // where a mix reads as out of sync against its own picture.
+        if (Math.abs(reelAudio.currentTime - picture) > 0.2) {
+          try { reelAudio.currentTime = picture; } catch (err) {}
+        }
       }
     }
     let previewActiveIndex = -1;
@@ -722,6 +761,14 @@
     let atlasDirty = false;
     let lastFreezeAt = 0;
     let lastPreviewKick = 0;
+    // aria-hidden writes are cheap but they invalidate the a11y tree, so only
+    // write on an actual change.
+    function setAria(el, hidden) {
+      const v = hidden ? 'true' : 'false';
+      if (el._aria === v) return;
+      el._aria = v;
+      el.setAttribute('aria-hidden', v);
+    }
     let lastRoomPower = -1;
     let lastRoomRgb = '';
     let lastMeter = -1;
@@ -1598,8 +1645,7 @@
       const activeFor = activeIndex;
       previewActiveIndex = activeFor;
       const video = previewVideos[activeFor];
-      video.muted = !soundOn;
-      if (soundOn) video.volume = PREVIEW_VOLUME;
+      video.muted = true;    // no audio track to unmute — see reelAudio above
       video.loop = false;
       video.preload = 'auto';
 
@@ -1651,7 +1697,7 @@
       document.getElementById('project-type').textContent = p.type;
       dots.forEach(function(d, j) { d.classList.toggle('active', j === activeIndex); });
       startActivePreview();
-      applyPreviewSound();
+      if (soundOn) setReelSource(activeIndex);
       setRoomLight(activeIndex);
       markAtlasDirty();
       redrawFilmTexture(lastAboutMix < 0 ? 0 : lastAboutMix);
@@ -1678,26 +1724,40 @@
 
     // ===== Sound =====
     const soundToggle = document.getElementById('soundToggle');
+    const soundLabel = soundToggle ? soundToggle.querySelector('.sb-label') : null;
+    const soundNudge = document.getElementById('soundNudge');
     const soundBars = soundToggle ? Array.prototype.slice.call(soundToggle.querySelectorAll('.sb-bars i')) : [];
+    // The nudge appears once, the first time the reel is actually on screen,
+    // and never again in this session. "Sound" on a button is not a reason to
+    // press it; the reason is that this is a sound designer's reel.
+    let nudgeState = 0;          // 0 = not yet shown, 1 = showing, 2 = done
+    let nudgeUntil = 0;
+    function dismissNudge() {
+      if (nudgeState !== 1) return;
+      nudgeState = 2;
+      if (soundNudge) { soundNudge.classList.remove('show'); soundNudge.hidden = true; }
+    }
     if (soundToggle) {
       soundToggle.addEventListener('click', function() {
         if (!soundOn) {
           // Must happen inside this handler — it is the gesture the browser
           // requires before any unmuted audio is allowed to start.
           if (!audio.enable()) return;
-          previewVideos.forEach(audio.attach);
+          audio.attach(reelAudio);
           audio.attach(mainVideo);
           soundOn = true;
-        } else {
-          soundOn = false;
-          audio.disable();
-        }
-        applyPreviewSound();
-        soundToggle.setAttribute('aria-pressed', soundOn ? 'true' : 'false');
-        if (soundOn) {
+          setReelSource(activeIndex);
           const pv = previewVideos[activeIndex];
           if (pv && pv.paused) { const r = pv.play(); if (r && r.catch) r.catch(function() {}); }
+        } else {
+          soundOn = false;
+          reelAudio.pause();
+          audio.disable();
         }
+        soundToggle.setAttribute('aria-pressed', soundOn ? 'true' : 'false');
+        if (soundLabel) soundLabel.textContent = soundOn ? 'Sound on' : 'Sound off';
+        soundToggle.setAttribute('aria-label', soundOn ? 'Mute the reel' : 'Play the reel with sound');
+        dismissNudge();
       });
     }
 
@@ -1770,6 +1830,7 @@
       // Partial zoom only — the film enlarges but stays a strip; the 3D player
       // is baked onto the active frame (see drawFrameUI 'playing').
       zoomTarget = FRAME_PLAYER_ZOOM;
+      reelAudio.pause();
       audio.resume();
       const playPromise = mainVideo.play();
       if (playPromise && playPromise.catch) playPromise.catch(function() {});
@@ -1921,7 +1982,7 @@
     // Education (section 3) is a horizontal scrollytelling rail of EDU_PANELS
     // panels. While that section is active the wheel walks panel-by-panel; only
     // at the ends does it hand off to the deck (prev/next section).
-    const EDU_PANELS = 7;
+    const EDU_PANELS = 3;
     let eduScroll = 0, eduScrollTarget = 0, eduStepAt = 0;
     // The instant the film finishes zooming into About, hold here for a moment so
     // the SAME downward flick / trackpad inertia can't skip straight to Trusted.
@@ -1992,9 +2053,141 @@
       wavesEnergy = Math.min(1, wavesEnergy + 0.55); // wake the 3D waves while turning the film
       return true;
     }
-    window.addEventListener('wheel', function(e) {
-      if (navGesture(e.deltaY > 0 ? 1 : -1, e.target, 1)) e.preventDefault();
-    }, { passive: false });
+    // ===== Wheel / trackpad =====
+    //
+    // The old handler called navGesture() once per wheel EVENT. A mouse wheel
+    // emits one event per notch (deltaY ~100), but a trackpad emits thirty-odd
+    // events of deltaY ~2-20 for a single two-finger flick — so one flick on a
+    // MacBook consumed the entire film->About zoom and then kept stepping
+    // through sections. Everything here is driven by accumulated DISTANCE
+    // instead, normalised across deltaMode:
+    //
+    //   * the film->About zoom is proportional, so it tracks the fingers
+    //     (one mouse notch still moves it ~0.087, as before);
+    //   * section cuts and frame paging stay discrete, gated by a travel
+    //     threshold plus a cooldown, so inertia after the fingers lift cannot
+    //     run away with them;
+    //   * a horizontal two-finger swipe pages the film strip, which is the
+    //     gesture its shape asks for.
+    (function wheelNav() {
+      const ZOOM_PER_PX = 1 / 1150;   // 100px notch -> ~0.087 of the zoom
+      const X_NOTCH = 110;            // horizontal travel per frame
+      const Y_NOTCH = 150;            // vertical travel per section cut
+      const COOLDOWN = 420;           // ms between discrete steps
+      const GESTURE_GAP = 200;        // ms of quiet that starts a new gesture
+
+      let accX = 0, accY = 0;
+      let lastEventAt = 0, lastStepAt = 0;
+
+      function canStep(now) { return now - lastStepAt > COOLDOWN; }
+      // A discrete step also swallows the REST of the gesture. A trackpad flick
+      // keeps sending inertia events after the fingers lift, and without this
+      // the tail of the same flick that cut away from the hero would carry
+      // straight on into the About zoom — so you could never come to rest on
+      // the film strip, and the horizontal paging below could never arm.
+      function step(now) { lastStepAt = now; accX = 0; accY = 0; }
+
+      window.addEventListener('wheel', function(e) {
+        if (playerOpen || playerOpening) return;
+
+        // deltaMode: 0 = pixels, 1 = lines, 2 = pages.
+        const m = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? 100 : 1;
+        const dx = e.deltaX * m;
+        const dy = e.deltaY * m;
+        const now = performance.now();
+        if (now - lastEventAt > GESTURE_GAP) { accX = 0; accY = 0; }
+        lastEventAt = now;
+        // Inside a step's cooldown nothing moves at all — not the next step and
+        // not the zoom. This is what makes one flick mean exactly one thing.
+        if (!canStep(now)) { accX = 0; accY = 0; e.preventDefault(); return; }
+
+        const onStrip = heroCurrent >= 0.999 && zoomTarget <= 0.001 &&
+                        Math.round(secTarget) === 0 && !shutterBusy;
+
+        // ---- Horizontal: walk the film strip, or the Education rail ----
+        if (Math.abs(dx) > Math.abs(dy)) {
+          const onEdu = !shutterBusy && zoomTarget >= 1 && Math.round(secTarget) === 3;
+          if (!onStrip && !onEdu) return;
+          accX += dx;
+          if (Math.abs(accX) >= X_NOTCH && canStep(now)) {
+            const dir = accX > 0 ? 1 : -1;
+            if (onStrip) goTo(activeIndex + dir);
+            else eduScrollTarget = Math.max(0, Math.min(EDU_PANELS - 1,
+                   Math.round(eduScrollTarget) + dir));
+            step(now);
+            wavesEnergy = Math.min(1, wavesEnergy + 0.4);
+          }
+          e.preventDefault();
+          return;
+        }
+
+        if (dy === 0) return;
+        const dir = dy > 0 ? 1 : -1;
+
+        // ---- The hero cuts rather than scrubs, so it is one discrete step ----
+        if (dir > 0 && heroCurrent < 0.999) {
+          if (canStep(now)) { heroCut(true); step(now); }
+          e.preventDefault();
+          return;
+        }
+        if (dir < 0 && heroCurrent > 0.001 && zoomTarget <= 0.001 && secTarget <= 0.001) {
+          if (canStep(now)) { heroCut(false); step(now); }
+          e.preventDefault();
+          return;
+        }
+
+        // ---- Education walks its panels before it hands back to the deck ----
+        if (!shutterBusy && zoomTarget >= 1 && Math.round(secTarget) === 3) {
+          const END = EDU_PANELS - 1;
+          const atEnd = eduScrollTarget >= END - 0.001, atStart = eduScrollTarget <= 0.001;
+          if ((dir > 0 && !atEnd) || (dir < 0 && !atStart)) {
+            accY += dy;
+            if (Math.abs(accY) >= Y_NOTCH && canStep(now)) {
+              eduScrollTarget = Math.max(0, Math.min(END, Math.round(eduScrollTarget) + dir));
+              step(now);
+              wavesEnergy = Math.min(1, wavesEnergy + 0.35);
+            }
+            e.preventDefault();
+            return;
+          }
+          // at an end -> fall through to section navigation
+        }
+
+        suppressAbout = false;   // scrolling is an intentional About reveal
+
+        if (dir > 0) {
+          if (zoomTarget < 1) {
+            // Proportional: the zoom follows the fingers instead of jumping.
+            const before = zoomTarget;
+            zoomTarget = Math.min(1, zoomTarget + dy * ZOOM_PER_PX);
+            if (before < 1 && zoomTarget >= 1) aboutDwellUntil = now + 900;
+            wavesEnergy = Math.min(1, wavesEnergy + Math.min(0.5, dy * 0.004));
+          } else if (Math.round(secTarget) === 0 && now < aboutDwellUntil) {
+            // Dwell on About: swallow this travel so a long flick doesn't run
+            // straight past it into Trusted.
+            accY = 0;
+          } else {
+            accY += dy;
+            if (Math.abs(accY) >= Y_NOTCH && canStep(now)) {
+              shutterTo(Math.round(secTarget) + 1);
+              step(now);
+            }
+          }
+        } else {
+          if (secTarget > 0.001 || shutterBusy) {
+            accY += dy;
+            if (Math.abs(accY) >= Y_NOTCH && canStep(now)) {
+              shutterTo(Math.round(secTarget) - 1);
+              step(now);
+            }
+          } else {
+            zoomTarget = Math.max(0, zoomTarget + dy * ZOOM_PER_PX);
+            wavesEnergy = Math.min(1, wavesEnergy + Math.min(0.5, -dy * 0.004));
+          }
+        }
+        e.preventDefault();
+      }, { passive: false });
+    })();
 
     // Touch: the finger DRIVES the page — no wheel on phones. While the intro
     // or the film->About zoom is on screen the gesture scrubs it 1:1 (the page
@@ -2354,6 +2547,7 @@
         for (let i = 0; i < previewVideos.length; i++) {
           if (!previewVideos[i].paused) previewVideos[i].pause();
         }
+        if (!reelAudio.paused) reelAudio.pause();
       } else {
         // Don't carry the whole hidden stretch into one giant dt.
         lastFrameT = 0;
@@ -2373,9 +2567,14 @@
       // One analyser read per frame, before any visual asks for it. `audible`
       // is our own belief that something should be making noise — it lets a
       // paused preview decay the signal instead of freezing the bars.
+      // The strip's soundtrack should run whenever the film is on screen and
+      // the viewer asked for it — but never over the top of the full player,
+      // which carries its own audio.
+      const stripAudible = soundOn && !playerOpen && !playerOpening &&
+        previewVideos[activeIndex] && !previewVideos[activeIndex].paused;
+      driveReelAudio(!!stripAudible);
       const audibleNow = soundOn && (
-        (playerOpen && !mainVideo.paused) ||
-        (!playerOpen && !playerOpening && previewVideos[activeIndex] && !previewVideos[activeIndex].paused)
+        (playerOpen && !mainVideo.paused) || (stripAudible && !reelAudio.paused)
       );
       audio.sample(dt, !!audibleNow);
       const audioLevel = audio.level();
@@ -2611,6 +2810,17 @@
         'translate3d(' + (titleParX * 46).toFixed(1) + 'px,' + (titleParY * 30).toFixed(1) + 'px,0)';
       if (navEl) { navEl.style.opacity = uiFade; navEl.style.pointerEvents = uiPE; }
       dotsEl.style.opacity = uiFade; dotsEl.style.pointerEvents = uiPE;
+      // First real sight of the reel -> invite once, for 7 seconds.
+      if (soundNudge) {
+        if (nudgeState === 0 && !soundOn && uiFade > 0.9) {
+          nudgeState = 1;
+          nudgeUntil = t + 7;
+          soundNudge.hidden = false;
+          requestAnimationFrame(function () { soundNudge.classList.add('show'); });
+        } else if (nudgeState === 1 && (t > nudgeUntil || uiFade < 0.5 || soundOn)) {
+          dismissNudge();
+        }
+      }
       controlsEl.style.opacity = uiFade; controlsEl.style.pointerEvents = uiPE;
 
       // The 3D wave field emerges behind the enlarging film as soon as the
@@ -2680,8 +2890,15 @@
       const deckEls = [trustEl, reviewsEl, educationEl, contactsEl];
       for (let i = 0; i < deckEls.length; i++) {
         const d = Math.abs(deckPos(i + 1) - scrollPos);     // distance in screen-heights
-        deckEls[i].style.opacity = (d < 0.45 ? 1 : 0).toFixed(0);
+        const shown = d < 0.45;
+        deckEls[i].style.opacity = (shown ? 1 : 0).toFixed(0);
+        // Keep assistive tech in step with the eye: only the section actually
+        // on screen is exposed, the rest are hidden. They used to be ALL
+        // hidden, permanently, which meant a screen reader got the hero and
+        // nothing else.
+        setAria(deckEls[i], !shown);
       }
+      setAria(aboutEl, !(z > 0.82 && scrollPos < 0.45));
       // ===== Education: horizontal scrollytelling rail =====
       // The rail glides sideways by whole panels; each panel's .e-rev children
       // rise + fade in (staggered) the more centred that panel is, so text keeps

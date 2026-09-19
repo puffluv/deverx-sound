@@ -81,10 +81,11 @@
     <div class="hero-side-meta" aria-hidden="true"><span>Reel — 2026</span><span>Sound for picture</span></div>
   </div>
 
+  <p class="sound-nudge" id="soundNudge" hidden>Turn the sound on &mdash; you&rsquo;re looking at a sound reel</p>
   <div class="controls">
     <button class="arrow sound-btn" id="soundToggle" type="button" aria-pressed="false" aria-label="Play the reel with sound">
       <span class="sb-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
-      <span class="sb-label">Sound</span>
+      <span class="sb-label">Sound off</span>
     </button>
     <button class="arrow" id="prev" aria-label="Previous">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
@@ -95,7 +96,7 @@
     </button>
   </div>
 
-  <section class="about" id="about" aria-hidden="true">
+  <section class="about" id="about">
     <div class="about-veil"></div>
     <div class="about-inner">
       <span class="about-kicker">About Me</span>
@@ -108,7 +109,7 @@
     <div class="deck-bg-inner" id="deckBgInner"></div>
   </div>
 
-  <section class="trust" id="trust" aria-hidden="true">
+  <section class="trust" id="trust">
     <div class="trust-head">
       <span class="trust-kicker r-kicker">Trusted by</span>
       <h2 class="r-title">Selected clients</h2>
@@ -120,7 +121,7 @@
     </div>
   </section>
 
-  <section class="deck-section reviews" id="reviews" aria-hidden="true">
+  <section class="deck-section reviews" id="reviews">
     <span class="deck-kicker r-kicker">Testimonials</span>
     <h2 class="r-title">What collaborators say</h2>
     <div class="review-viewport reveal">
@@ -187,30 +188,17 @@
     <div class="review-hint reveal">drag to read more</div>
   </section>
 
-  <section class="deck-section education" id="education" aria-hidden="true">
+  <section class="deck-section education" id="education">
     <div class="edu-rail" id="eduRail">
 
-      <!-- 1 · Hero -->
-      <article class="edu-panel">
-        <div class="edu-inner">
-          <span class="edu-kick e-rev">Mentorship</span>
-          <h2 class="edu-title e-rev">Sound Design<br>Mentoring</h2>
-          <p class="edu-tag e-rev">I teach the thing I love most in life — creating incredible sound.</p>
-        </div>
-      </article>
-
-      <!-- 2 · The course -->
-      <article class="edu-panel">
-        <div class="edu-inner">
-          <span class="edu-kick e-rev">The course</span>
-          <p class="edu-big e-rev">Everything I've learned on <em>real projects</em> — films, animation, commercials and games — distilled into one mentorship.</p>
-        </div>
-      </article>
-
-      <!-- 3 · Why this profession -->
+      <!-- 1 · What it is, and why the job is worth doing.
+           The philosophy line leads, because it is the strongest thing in the
+           whole section and it used to be buried on panel four. -->
       <article class="edu-panel">
         <div class="edu-inner wide">
-          <span class="edu-kick e-rev">Why this profession</span>
+          <span class="edu-kick e-rev">Mentorship</span>
+          <h2 class="edu-title e-rev">Sound Design<br>Mentoring</h2>
+          <p class="edu-quote-sub e-rev">Sound design isn&rsquo;t a boring job about plugins. It&rsquo;s a craft where you build atmosphere, emotion and entire worlds through sound &mdash; everything I&rsquo;ve learned on real films, animation, commercials and games, in one mentorship. After a month you&rsquo;ll sound-design a scene from your favourite film on your own.</p>
           <div class="edu-grid4">
             <div class="edu-feat e-rev"><span class="ic">01</span><h4>Work remotely</h4><p>From anywhere in the world</p></div>
             <div class="edu-feat e-rev"><span class="ic">02</span><h4>Creative projects</h4><p>Films, animation, ads &amp; games</p></div>
@@ -220,61 +208,46 @@
         </div>
       </article>
 
-      <!-- 4 · Philosophy -->
-      <article class="edu-panel">
-        <div class="edu-inner">
-          <p class="edu-quote-big e-rev">Sound design isn't a boring job about plugins.</p>
-          <p class="edu-quote-sub e-rev">It's a craft where you build atmosphere, emotion and entire worlds through sound. I teach people to <em>hear the world differently</em> — and after one month you'll sound-design a scene from your favourite film on your own.</p>
-        </div>
-      </article>
-
-      <!-- 5 · What you'll master -->
+      <!-- 2 · Everything that used to be the 14-item wall plus the separate
+           "what you get" list, grouped into the four things they actually are. -->
       <article class="edu-panel">
         <div class="edu-inner wide">
-          <span class="edu-kick e-rev">What you'll master</span>
-          <ol class="edu-master">
-            <li class="e-rev">Choosing a DAW — the pros & cons of each</li>
-            <li class="e-rev">Training your ear to hear sound that isn't there yet</li>
-            <li class="e-rev">How to stylize sound</li>
-            <li class="e-rev">How to properly approach a project</li>
-            <li class="e-rev">How to think like a sound designer</li>
-            <li class="e-rev">The technical side of achieving the right sound</li>
-            <li class="e-rev">Headphone types & how to choose the right ones</li>
-            <li class="e-rev">Audio gear overview & what it's used for</li>
-            <li class="e-rev">Real confidence working with sound overall</li>
-            <li class="e-rev">Building a portfolio tailored to you</li>
-            <li class="e-rev">A personalized approach</li>
-            <li class="e-rev">Working with music & voice (processing, not composing)</li>
-            <li class="e-rev">Plugin types, what they do & my go-to tools</li>
-            <li class="e-rev">Mixing & mastering</li>
-          </ol>
+          <span class="edu-kick e-rev">What you&rsquo;ll learn</span>
+          <div class="edu-groups">
+            <div class="edu-group e-rev">
+              <h4><span class="gn">01</span> Ear &amp; craft</h4>
+              <p>Training your ear to hear sound that isn&rsquo;t there yet. How to stylize sound. How to think like a sound designer.</p>
+            </div>
+            <div class="edu-group e-rev">
+              <h4><span class="gn">02</span> Tools</h4>
+              <p>Choosing a DAW and the trade-offs of each. Plugin types, what they actually do, and my go-to set. Headphones and studio gear &mdash; what to buy and why.</p>
+            </div>
+            <div class="edu-group e-rev">
+              <h4><span class="gn">03</span> The work</h4>
+              <p>How to approach a project properly. The technical side of getting the sound you hear in your head. Working with music and voice (processing, not composing). Mixing &amp; mastering.</p>
+            </div>
+            <div class="edu-group e-rev">
+              <h4><span class="gn">04</span> What you leave with</h4>
+              <p>A portfolio built around you, detailed reviews of your work, a real understanding of how the industry runs &mdash; and genuine confidence with sound.</p>
+            </div>
+          </div>
         </div>
       </article>
 
-      <!-- 6 · What you get -->
-      <article class="edu-panel">
-        <div class="edu-inner">
-          <span class="edu-kick e-rev">What you get</span>
-          <ul class="edu-get2">
-            <li class="e-rev">Full training with hands-on practice and feedback</li>
-            <li class="e-rev">Detailed reviews of your work</li>
-            <li class="e-rev">A real understanding of the industry</li>
-            <li class="e-rev">A strong, individual portfolio</li>
-            <li class="e-rev">A personal, one-to-one approach</li>
-            <li class="e-rev">A solid foundation for working with sound</li>
-          </ul>
-        </div>
-      </article>
-
-      <!-- 7 · Pricing / CTA -->
+      <!-- 3 · Price and how to apply. -->
       <article class="edu-panel">
         <div class="edu-inner">
           <span class="edu-kick e-rev">Enrolment</span>
           <div class="edu-price-card e-rev">
             <span class="pc-label">Private 1-on-1 mentorship</span>
             <div class="pc-figure"><span class="pc-price">$600</span><span class="pc-dur">/ 4 months</span></div>
-            <p class="pc-note">Real deadlines run through the whole course — building discipline and preparing you for how the industry actually works.</p>
-            <a class="edu-cta" href="https://wa.me/77078381488" target="_blank" rel="noopener">Apply via WhatsApp →</a>
+            <ul class="pc-included">
+              <li>Hands-on practice with feedback on every piece</li>
+              <li>A personal, one-to-one pace &mdash; not a recorded course</li>
+              <li>Real deadlines throughout, the way the industry actually runs</li>
+            </ul>
+            <p class="pc-note">Those deadlines are the point: they build the discipline the work demands.</p>
+            <a class="edu-cta" href="https://wa.me/77078381488" target="_blank" rel="noopener">Apply via WhatsApp &rarr;</a>
           </div>
         </div>
       </article>
@@ -287,7 +260,7 @@
     </div>
   </section>
 
-  <section class="deck-section contacts" id="contacts" aria-hidden="true">
+  <section class="deck-section contacts" id="contacts">
     <span class="deck-kicker r-kicker">Contact</span>
     <h2 class="r-title">Let’s talk about your picture.</h2>
     <a class="contact-mail reveal" href="https://wa.me/77078381488" target="_blank" rel="noopener">+7 707 838 1488</a>
