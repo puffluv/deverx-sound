@@ -8,8 +8,13 @@
   import { initLogoMarquee } from './logo-marquee.js';
   import { initReviewsRail } from './reviews-rail.js';
   import { drawHeroWave, hasHeroWave, setWaveBoostTarget } from './hero-wave.js';
+  import * as audio from './audio.js';
 
   window.addEventListener('error', (e) => {
+    // The page starts behind a closed camera gate (body.booting) that only JS
+    // opens. If anything throws before that, the curtain would stay down over a
+    // black screen forever — so lift it first, then report.
+    document.body.classList.remove('booting');
     const box = document.getElementById('errorBox');
     if (box) {
       box.style.display = 'block';
@@ -179,7 +184,10 @@
       // intro compete with the one clip the viewer is about to actually see;
       // startActivePreview() promotes the active frame to 'auto' and warms only
       // its two immediate neighbours.
-      video.preload = 'none';
+      // The first frame is the one the viewer is guaranteed to land on, so it
+      // loads straight away. The rest wait until startActivePreview() promotes
+      // them, which keeps the intro down to a single media connection.
+      video.preload = index === 0 ? 'auto' : 'none';
       // Stops mobile Safari/Chrome offering these silent 5-second loops to
       // AirPlay/Cast and to the OS media controls.
       video.disableRemotePlayback = true;
@@ -193,6 +201,19 @@
       video.addEventListener('error', markAtlasDirty);
       return video;
     });
+    // Previews are silent until the viewer asks for sound; browsers would
+    // refuse to start them otherwise, and a portfolio that makes noise on load
+    // is a portfolio people close.
+    let soundOn = false;
+    const PREVIEW_VOLUME = 0.42;
+    function applyPreviewSound() {
+      for (let i = 0; i < previewVideos.length; i++) {
+        const v = previewVideos[i];
+        const live = soundOn && i === activeIndex;
+        v.muted = !live;
+        if (live) v.volume = PREVIEW_VOLUME;
+      }
+    }
     let previewActiveIndex = -1;
     let lastPreviewPaint = 0;
     let playerOpening = false;
@@ -222,7 +243,33 @@
     let loadingHidden = false;
     // Start the card's staggered rise on the next frame — it depends on
     // nothing but the stylesheet and the portrait, both already here.
-    requestAnimationFrame(function() { document.body.classList.add('hero-in'); });
+    // The site opens like a camera gate: the blades start shut (body.booting,
+    // set in the markup so there is no flash of an un-curtained hero), and
+    // retract once the portrait has actually decoded — so the reveal is of a
+    // finished frame, not a half-painted one. Reuses the same blades the
+    // section transitions use.
+    (function openingGate() {
+      const gate = document.getElementById('shutter');
+      let opened = false;
+      function open() {
+        if (opened) return;
+        opened = true;
+        requestAnimationFrame(function() {
+          document.body.classList.remove('booting');
+          if (gate) {
+            gate.classList.add('opening');
+            setTimeout(function() { gate.classList.remove('opening'); }, 380);
+          }
+          document.body.classList.add('hero-in');
+        });
+      }
+      const portrait = new Image();
+      portrait.src = 'img/denis2-hero.webp';
+      if (portrait.complete) open();
+      else { portrait.onload = open; portrait.onerror = open; }
+      // Never hold the curtain on a slow or failed image.
+      setTimeout(open, 2200);
+    })();
 
     // ============ THREE.JS ============
     const canvas = document.getElementById('canvas');
@@ -261,6 +308,22 @@
     const fillLight = new THREE.PointLight(0xff7a3d, 0.65, 42, 2);
     fillLight.position.set(0, -1.2, 7);
     scene.add(fillLight);
+
+    // ============ ROOM LIGHT ============
+    // The active project's accent becomes the colour of the light in the room:
+    // the CSS projector pool behind the film, and the two Three.js lights that
+    // actually fall on the strip. Walking the reel walks the light.
+    const roomLightEl = document.getElementById('roomLight');
+    const KEY_BASE = new THREE.Color(0xffc47a);
+    const RIM_BASE = new THREE.Color(0x73d6ff);
+    const roomTarget = new THREE.Color(0xc9a063);
+    const roomCurrent = new THREE.Color(0xc9a063);
+    let roomPower = 0;          // 0..1 overall intensity, eased
+    let roomPowerTarget = 0;
+    function setRoomLight(index) {
+      const pal = projects[index] && projects[index].palette;
+      roomTarget.set(pal && pal[1] ? normHex(pal[1]) : '#c9a063');
+    }
 
     // ============ FRAME IMAGE TEXTURE ============
     // (Color/rng helpers and FRAME_KINDS come from utils.js / data.js.)
@@ -551,6 +614,7 @@
 
       // Bar count scales with width but is capped: past ~110 bars the field
       // reads as a solid block anyway, and every extra bar is two fillRects.
+      const live = audio.signalPresence();
       const COUNT = Math.max(48, Math.min(LITE ? 72 : 110, Math.round(w / 12)));
       const slot = w / COUNT;
       const bw = Math.max(1.5, slot * 0.4);
@@ -559,7 +623,11 @@
       function drawBars(tt, hScale, rgb, alpha, glow) {
         for (let i = 0; i < COUNT; i++) {
           const u = i / (COUNT - 1);
-          const mag = Math.min(1.0, Math.abs(audioSample(u, tt)));
+          let mag = Math.min(1.0, Math.abs(audioSample(u, tt)));
+          if (live > 0.001) {
+            // Real spectrum, mixed in by however much signal there actually is.
+            mag = mag * (1 - live) + Math.min(1, audio.bandAt(u) * 1.25) * live;
+          }
           let bh = mag * h * 0.38 * hScale;
           if (bh < 1) bh = 1;
           const cx = x + u * w;
@@ -586,7 +654,10 @@
       ctx.beginPath();
       const step = Math.max(3, Math.round(w / 320));
       for (let px = 0; px <= w; px += step) {
-        const yy = midY - audioSample(px / w, t) * h * 0.27;
+        const u = px / w;
+        const syn = audioSample(u, t);
+        const sig = live > 0.001 ? (syn * (1 - live) + audio.waveAt(u) * 1.6 * live) : syn;
+        const yy = midY - sig * h * 0.27;
         px === 0 ? ctx.moveTo(x + px, yy) : ctx.lineTo(x + px, yy);
       }
       ctx.stroke();
@@ -650,6 +721,10 @@
     let lastAboutMix = -1;
     let atlasDirty = false;
     let lastFreezeAt = 0;
+    let lastPreviewKick = 0;
+    let lastRoomPower = -1;
+    let lastRoomRgb = '';
+    let lastMeter = -1;
     // Coalesce atlas rebuilds: several <video> events can land in one tick and
     // each would otherwise trigger a full multi-megabyte re-upload.
     function markAtlasDirty() { atlasDirty = true; }
@@ -1523,7 +1598,8 @@
       const activeFor = activeIndex;
       previewActiveIndex = activeFor;
       const video = previewVideos[activeFor];
-      video.muted = true;
+      video.muted = !soundOn;
+      if (soundOn) video.volume = PREVIEW_VOLUME;
       video.loop = false;
       video.preload = 'auto';
 
@@ -1575,6 +1651,8 @@
       document.getElementById('project-type').textContent = p.type;
       dots.forEach(function(d, j) { d.classList.toggle('active', j === activeIndex); });
       startActivePreview();
+      applyPreviewSound();
+      setRoomLight(activeIndex);
       markAtlasDirty();
       redrawFilmTexture(lastAboutMix < 0 ? 0 : lastAboutMix);
     }
@@ -1597,6 +1675,31 @@
     });
     const dots = dotsEl.querySelectorAll('.dot');
     setActive(activeIndex);
+
+    // ===== Sound =====
+    const soundToggle = document.getElementById('soundToggle');
+    const soundBars = soundToggle ? Array.prototype.slice.call(soundToggle.querySelectorAll('.sb-bars i')) : [];
+    if (soundToggle) {
+      soundToggle.addEventListener('click', function() {
+        if (!soundOn) {
+          // Must happen inside this handler — it is the gesture the browser
+          // requires before any unmuted audio is allowed to start.
+          if (!audio.enable()) return;
+          previewVideos.forEach(audio.attach);
+          audio.attach(mainVideo);
+          soundOn = true;
+        } else {
+          soundOn = false;
+          audio.disable();
+        }
+        applyPreviewSound();
+        soundToggle.setAttribute('aria-pressed', soundOn ? 'true' : 'false');
+        if (soundOn) {
+          const pv = previewVideos[activeIndex];
+          if (pv && pv.paused) { const r = pv.play(); if (r && r.catch) r.catch(function() {}); }
+        }
+      });
+    }
 
     document.getElementById('prev').addEventListener('click', function() { goTo(activeIndex - 1); });
     document.getElementById('next').addEventListener('click', function() { goTo(activeIndex + 1); });
@@ -1667,9 +1770,10 @@
       // Partial zoom only — the film enlarges but stays a strip; the 3D player
       // is baked onto the active frame (see drawFrameUI 'playing').
       zoomTarget = FRAME_PLAYER_ZOOM;
+      audio.resume();
       const playPromise = mainVideo.play();
       if (playPromise && playPromise.catch) playPromise.catch(function() {});
-      // Clear the idle "CLICK TO PLAY" affordance from the texture immediately
+      // Clear the idle affordance from the texture immediately
       // so it doesn't flash on the frame during the zoom-in.
       redrawFilmTexture(0);
     }
@@ -1796,6 +1900,7 @@
     });
       mainVideo.addEventListener('timeupdate', syncPlayerControls);
       mainVideo.addEventListener('durationchange', syncPlayerControls);
+    mainVideo.addEventListener('play', function() { audio.resume(); });
     mainVideo.addEventListener('loadeddata', function() { redrawFilmTexture(0); });
       mainVideo.addEventListener('play', syncPlayerControls);
       mainVideo.addEventListener('pause', syncPlayerControls);
@@ -2252,6 +2357,7 @@
       } else {
         // Don't carry the whole hidden stretch into one giant dt.
         lastFrameT = 0;
+        audio.resume();
         if (!playerOpen && !playerOpening) startActivePreview();
       }
     });
@@ -2263,6 +2369,16 @@
       const t = performance.now() * 0.001;
       const dt = lastFrameT ? Math.min(0.05, t - lastFrameT) : 0.016;
       lastFrameT = t;
+
+      // One analyser read per frame, before any visual asks for it. `audible`
+      // is our own belief that something should be making noise — it lets a
+      // paused preview decay the signal instead of freezing the bars.
+      const audibleNow = soundOn && (
+        (playerOpen && !mainVideo.paused) ||
+        (!playerOpen && !playerOpening && previewVideos[activeIndex] && !previewVideos[activeIndex].paused)
+      );
+      audio.sample(dt, !!audibleNow);
+      const audioLevel = audio.level();
 
       // Scroll zoom (eased). 0 = full view, 1 = active frame fills the screen.
       zoomCurrent = approach(zoomCurrent, zoomTarget, 0.08, dt);
@@ -2295,7 +2411,8 @@
       if (wavesEnergy < 0.001) wavesEnergy = 0;
       const aboutFull = ss(0.94, 1.0, z);           // 1 == standing on About
       const wavesSpeed = REDUCED_MOTION ? wavesEnergy : Math.max(wavesEnergy, aboutFull);
-      waveTime += dt * wavesSpeed * 0.6;            // base wave speed (lower = calmer)
+      const livePresence = audio.signalPresence();
+      waveTime += dt * (wavesSpeed * 0.6 + livePresence * audioLevel * 1.5);
       const wavesRepaint = (t - lastWavePaint) > (LITE ? 0.055 : 0.041); // 18fps / 24fps
       const wig = 1.0 - z;              // calm the idle drift as we zoom in
       // Visibility gate: the WebGL film canvas is fully covered by the opaque
@@ -2331,11 +2448,21 @@
           // Active preview still decoding -> keep the LOADING spinner spinning.
           redrawFilmTexture(0);
           lastPreviewPaint = t;
+          // networkState 3 (NO_SOURCE) or an idle element that never got going:
+          // ask again rather than spinning here forever.
+          if (previewVideo && previewVideo.readyState === 0 &&
+              previewVideo.networkState !== 2 && t - lastPreviewKick > 1.5) {
+            lastPreviewKick = t;
+            previewVideo.preload = 'auto';
+            try { previewVideo.load(); } catch (err) {}
+          }
         }
       } else if (!filmLive && previewActiveIndex === activeIndex) {
-        // Fully hidden: stop the active preview's decode loop too.
+        // Fully hidden: stop the active preview's decode loop — but only once
+        // it HAS a decode loop. Pausing a clip that is still buffering cancels
+        // the fetch, and with preload 'none' nothing would ever restart it.
         const pv = previewVideos[activeIndex];
-        if (pv && !pv.paused) pv.pause();
+        if (pv && !pv.paused && pv.readyState >= 2) pv.pause();
       }
       if ((playerOpening || playerOpen) && mainVideo.readyState >= 2) playerEverReady = true;
       // Redraw the 3D on-film player (skip in cinema: it's hidden behind it).
@@ -2383,6 +2510,9 @@
       filmGroup.position.y = FILM_BASE_POS_Y + Math.sin(t * 0.6) * 0.035 * wig;
       filmGroup.position.x = FILM_BASE_POS_X + Math.cos(t * 0.34) * 0.02 * wig;
       glowTube.material.opacity = 0.11 + Math.sin(t * 1.4) * 0.025;
+      // A touch of loudness on the crest, so the frame you are watching
+      // physically leans toward you on the loud moments.
+      filmMaterial.uniforms.uBulge.value = 0.92 + livePresence * audioLevel * 0.22;
       keyLight.intensity = 1.55 + Math.sin(t * 0.9) * 0.08;
       rimLight.intensity = 0.68 + Math.cos(t * 1.1) * 0.06;
 
@@ -2430,6 +2560,41 @@
         stage.style.opacity = filmReveal.toFixed(3);
         stage.style.transform = 'scale(' + (1 + (1 - filmReveal) * 0.07).toFixed(3) + ')';
       }
+
+      // ===== Room light =====
+      // Colour eases toward the active project; power is a low resting glow
+      // that the audio pushes when sound is on. Visible only while the film is.
+      roomCurrent.lerp(roomTarget, Math.min(1, dt * 2.2));
+      const roomVisible = filmReveal * (1 - ss(0.92, 1.0, z));
+      roomPowerTarget = roomVisible * (0.5 + livePresence * audioLevel * 1.5);
+      roomPower = approach(roomPower, roomPowerTarget, 0.12, dt);
+      if (roomLightEl) {
+        if (Math.abs(roomPower - lastRoomPower) > 0.004) {
+          lastRoomPower = roomPower;
+          roomLightEl.style.setProperty('--frame-light-power', roomPower.toFixed(3));
+        }
+        const rgb = Math.round(roomCurrent.r * 255) + ',' +
+                    Math.round(roomCurrent.g * 255) + ',' +
+                    Math.round(roomCurrent.b * 255);
+        if (rgb !== lastRoomRgb) {
+          lastRoomRgb = rgb;
+          roomLightEl.style.setProperty('--frame-light', rgb);
+        }
+      }
+      // The same colour falls on the film itself, so the strip and the room
+      // agree instead of the glow looking pasted on behind it.
+      keyLight.color.copy(KEY_BASE).lerp(roomCurrent, 0.5);
+      rimLight.color.copy(RIM_BASE).lerp(roomCurrent, 0.65);
+
+      // The four-bar meter on the toggle shows the real level.
+      if (soundBars.length && Math.abs(audioLevel - lastMeter) > 0.01) {
+        lastMeter = audioLevel;
+        for (let i = 0; i < soundBars.length; i++) {
+          const band = audio.bandAt(0.12 + i * 0.26);
+          soundBars[i].style.setProperty('--h', Math.max(0.18, Math.min(1, band * 1.1)).toFixed(2));
+        }
+      }
+
 
       // Fade the slider UI out as we scroll. (Also gated by the hero hand-off so
       // the film chrome stays hidden until the intro clears.)

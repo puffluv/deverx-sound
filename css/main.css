@@ -15,6 +15,11 @@
     --line: rgba(236, 231, 222, 0.1);
     --glass: rgba(14, 15, 19, 0.62);
     --ease: cubic-bezier(0.22, 1, 0.36, 1);
+    /* Set from JS: the colour of whichever project is on the front of the
+       strip, and how hard it is burning (driven by the audio when sound is on).
+       See setRoomLight() in app.js. */
+    --frame-light: 201, 160, 99;
+    --frame-light-power: 0;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
@@ -126,6 +131,20 @@
     color: var(--accent); text-decoration: none;
     text-shadow: none;
   }
+  /* The projector pool. It is the one thing on the page that changes colour,
+     and it changes because the FOOTAGE changed — the active project's palette
+     drives it, so walking the strip walks the light in the room. */
+  .room-light {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(ellipse 62% 48% at 50% 46%,
+        rgba(var(--frame-light), calc(0.26 * var(--frame-light-power))) 0%,
+        rgba(var(--frame-light), calc(0.08 * var(--frame-light-power))) 42%,
+        transparent 74%),
+      radial-gradient(ellipse 120% 60% at 50% 104%,
+        rgba(var(--frame-light), calc(0.13 * var(--frame-light-power))) 0%,
+        transparent 68%);
+  }
   .stage { position: fixed; inset: 0; overflow: hidden; z-index: 1; }
   #canvas {
     position: absolute; inset: 0; width: 100%; height: 100%;
@@ -167,8 +186,8 @@
     background: url('../img/denis2-hero.webp') 50% 84% / auto 112% no-repeat;
     /* B&W profile shot: keep it monochrome (grayscale), lift it a touch since
        it's a dark frame, and let the dark jacket melt into the graphite. */
-    filter: grayscale(1) contrast(1.05) brightness(1.08)
-            drop-shadow(0 24px 55px rgba(0,0,0,0.5));
+    filter: grayscale(1) contrast(1.14) brightness(1.26)
+            drop-shadow(0 24px 55px rgba(0,0,0,0.55));
     /* Dissolve his edges INTO the backdrop so there's no hard cut-out silhouette
        — he emerges from the dark. TWO masks intersected: a strong bottom fade
        (lower body melts away) AND a gentle all-around feather on the side/top
@@ -198,7 +217,7 @@
     position: absolute; inset: 0; pointer-events: none;
     background:
       linear-gradient(180deg, rgba(8,8,10,0.5) 0%, rgba(8,8,10,0.1) 28%, rgba(8,8,10,0.2) 62%, rgba(8,8,10,0.88) 100%),
-      linear-gradient(90deg, rgba(8,8,10,0.78) 0%, rgba(8,8,10,0.38) 30%, rgba(8,8,10,0) 56%);
+      linear-gradient(90deg, rgba(8,8,10,0.82) 0%, rgba(8,8,10,0.44) 32%, rgba(8,8,10,0) 58%);
   }
 
   /* ===== THE CARD =====
@@ -223,11 +242,13 @@
   .hero-title {
     font-family: 'Space Grotesk', sans-serif;
     font-weight: 500;
-    font-size: clamp(42px, 8.4vw, 92px);
-    line-height: 1.0;
-    letter-spacing: -0.045em;
+    font-size: clamp(40px, 11vw, 96px);
+    line-height: 0.88;
+    letter-spacing: -0.05em;
     color: var(--text);
   }
+  /* One line on phones, a stacked block from the split layout up. */
+  .ht-break { display: none; }
   /* Rule under the name, then the two craft lines. */
   .hero-sub {
     position: relative;
@@ -251,6 +272,8 @@
   .hero-in .hero-sub2, .hero-in .hero-cta {
     animation: hero-rise 0.85s var(--ease) both;
   }
+  .booting .hero-kicker, .booting .hero-title,
+  .booting .hero-sub, .booting .hero-sub2, .booting .hero-cta { animation: none; }
   .hero-in .hero-kicker { animation-delay: 0.04s; }
   .hero-in .hero-title  { animation-delay: 0.14s; }
   .hero-in .hero-sub    { animation-delay: 0.26s; }
@@ -268,13 +291,14 @@
     .hero-content {
       align-items: flex-start; text-align: left;
       justify-content: center;
-      left: 9vw; right: 46%; padding: 0; max-width: none;
+      left: 6vw; right: 43%; padding: 0; max-width: none;
     }
-    .hero-title { font-size: clamp(44px, 5.6vw, 86px); }
-    .hero-sub, .hero-sub2 { max-width: 30ch; }
+    .hero-title { font-size: clamp(60px, 9.2vw, 158px); }
+    .ht-break { display: block; }
+    .hero-sub, .hero-sub2 { max-width: 34ch; }
     .hero-sub::before { left: 0; transform: none; }
     .hero-cta { justify-content: flex-start; }
-    .hero-photo { left: 44%; right: 0; }
+    .hero-photo { left: 41%; right: 0; }
     .hero-side-meta {
       display: flex; align-items: center; gap: 16px;
       position: absolute; left: 3.4vw; top: 50%; transform: translateY(-50%);
@@ -353,6 +377,29 @@
     box-shadow: 0 14px 38px rgba(201,160,99,0.45);
   }
   .arrow:active { transform: scale(0.95); }
+  .sound-btn {
+    width: auto; border-radius: 999px; gap: 10px; padding: 0 18px 0 15px;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .sound-btn:hover { background: rgba(10,10,13,0.5); color: var(--text); border-color: var(--accent-soft); transform: none; }
+  .sound-btn[aria-pressed="true"] { color: var(--accent); border-color: var(--accent-soft); }
+  .sb-bars { display: flex; align-items: flex-end; gap: 2px; height: 13px; }
+  .sb-bars i {
+    display: block; width: 2px; border-radius: 1px; background: currentColor;
+    /* --h is written per bar from the analyser; 0.18 is the resting height. */
+    height: calc(2px + 11px * var(--h, 0.18));
+    transition: height .06s linear;
+  }
+  .sound-btn[aria-pressed="false"] .sb-bars { opacity: 0.5; }
+  /* A slash across the meter reads "off" without needing a second icon. */
+  .sound-btn[aria-pressed="false"] .sb-bars { position: relative; }
+  .sound-btn[aria-pressed="false"] .sb-bars::after {
+    content: ''; position: absolute; left: -2px; right: -2px; top: 50%;
+    height: 1px; background: currentColor; transform: rotate(-38deg);
+  }
+  @media (max-width: 900px) { .sb-label { display: none; } .sound-btn { padding: 0 14px; } }
   .dots {
     display: flex; align-items: center; gap: 10px;
   }
@@ -955,9 +1002,10 @@
   .shutter { position: fixed; inset: 0; z-index: 105; pointer-events: none; }
   .shutter-blade {
     position: absolute; left: 0; right: 0; height: 52%;
-    background: #020205;
+    background: var(--bg-deep);
     transform: scaleY(0); will-change: transform;
   }
+  .booting .shutter-blade { transform: scaleY(1); }
   .shutter-blade.top    { top: 0;    transform-origin: top; }
   .shutter-blade.bottom { bottom: 0; transform-origin: bottom; }
   /* thin warm seam where the blades meet, like a film frame line */

@@ -4,6 +4,7 @@
 // Hovering the Showreel button "excites" the wave (amplitude eases toward
 // x2) — a nudge that there's sound behind that button.
 import { ss } from './utils.js';
+import * as audio from './audio.js';
 
 const heroWave = document.getElementById('heroWave');
 const hwCtx = heroWave ? heroWave.getContext('2d') : null;
@@ -32,6 +33,9 @@ export function drawHeroWave(t, fade) {
   grad.addColorStop(1.00, 'rgba(216,164,88,0)');   // runs the full width, soft fade only at the very edge
   ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.strokeStyle = grad;
   waveBoost += (waveBoostTarget - waveBoost) * 0.08;
+  // When the reel is actually playing, this line stops being decoration and
+  // becomes the signal. Blended by presence so it never snaps.
+  const live = audio.signalPresence();
   for (let pass = 0; pass < 2; pass++) {
     const amp = pass === 0 ? 1 : 0.5;
     const phse = t * 1.1 * (pass === 0 ? 1 : -1.35);
@@ -44,8 +48,9 @@ export function drawHeroWave(t, fade) {
       const env = ss(0, 0.12, u) * ss(0, 0.06, 1 - u);
       // One smooth low-frequency swell (no high-frequency harmonic = no
       // jaggedness) at a gentle amplitude (no tall spikes).
-      const y = midY
-        + Math.sin(u * 5.0 + phse) * Math.sin(u * 2.0 - phse * 0.55) * (ch * 0.17) * waveBoost * amp * env;
+      const syn = Math.sin(u * 5.0 + phse) * Math.sin(u * 2.0 - phse * 0.55);
+      const sig = live > 0.001 ? syn * (1 - live) + audio.waveAt(u) * 2.2 * live : syn;
+      const y = midY + sig * (ch * 0.17) * waveBoost * amp * env;
       if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
     }
     ctx.lineWidth = pass === 0 ? 2.2 : 1.3;

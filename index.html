@@ -21,8 +21,9 @@
 <link rel="preload" as="image" href="img/denis2-hero.webp">
 <link rel="stylesheet" href="css/main.css">
 </head>
-<body>
+<body class="booting">
 
+  <div class="room-light" id="roomLight" aria-hidden="true"></div>
   <div class="page-bg" id="pageBg"><canvas id="wavesBgCanvas" style="position:absolute;inset:0;width:100%;height:100%;display:block;"></canvas></div>
   <div class="cinema-frame" aria-hidden="true"></div>
 
@@ -61,7 +62,7 @@
     <div class="hero-veil"></div>
     <div class="hero-content" id="heroContent">
       <span class="hero-kicker">Full audio post production</span>
-      <h1 class="hero-title">Denis Plakhetko</h1>
+      <h1 class="hero-title">Denis<br class="ht-break">Plakhetko</h1>
       <p class="hero-sub">Sound design, Mixing &amp; Mastering</p>
       <p class="hero-sub2">Stereo &amp; Dolby 5.1 Mixing</p>
       <div class="hero-cta">
@@ -81,6 +82,10 @@
   </div>
 
   <div class="controls">
+    <button class="arrow sound-btn" id="soundToggle" type="button" aria-pressed="false" aria-label="Play the reel with sound">
+      <span class="sb-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      <span class="sb-label">Sound</span>
+    </button>
     <button class="arrow" id="prev" aria-label="Previous">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
     </button>
