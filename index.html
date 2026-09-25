@@ -2,296 +2,404 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Denis Plakhetko — Sound Designer &amp; Re-recording Mixer</title>
-<meta name="description" content="Full audio post production by Denis Plakhetko — sound design, mixing &amp; mastering, stereo and Dolby 5.1, for film, animation, commercials and games.">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Deverx Sound Studio | Full Audio Post-Production for Film</title>
+<meta name="description" content="Deverx Sound Studio is a film audio post-production studio in Dallas, Texas, led by sound designer and re-recording mixer Denis Plakhetko. Dialogue editing, sound design, Foley and mixing in stereo and Dolby 5.1, for filmmakers worldwide.">
+<meta name="theme-color" content="#121519">
+<meta name="color-scheme" content="dark">
+<link rel="canonical" href="https://puffluv.github.io/deverx-sound/">
 <meta property="og:type" content="website">
+<meta property="og:site_name" content="Deverx Sound Studio">
 <meta property="og:url" content="https://puffluv.github.io/deverx-sound/">
-<meta property="og:title" content="Denis Plakhetko — Sound Designer & Re-recording Mixer">
-<meta property="og:description" content="Sound design, mixing &amp; mastering. Stereo &amp; Dolby 5.1.">
-<meta property="og:image" content="https://puffluv.github.io/deverx-sound/img/og.jpg">
+<meta property="og:title" content="Deverx Sound Studio — Full Audio Post-Production">
+<meta property="og:description" content="Dialogue editing, sound design, Foley and mixing in stereo and Dolby 5.1. Based in Dallas, Texas, working with filmmakers worldwide.">
+<meta property="og:image" content="https://puffluv.github.io/deverx-sound/img/og-deverx.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Denis Plakhetko — Sound Designer & Re-recording Mixer">
-<meta name="twitter:description" content="Sound design, mixing &amp; mastering. Stereo &amp; Dolby 5.1.">
-<meta name="twitter:image" content="https://puffluv.github.io/deverx-sound/img/og.jpg">
+<meta name="twitter:title" content="Deverx Sound Studio — Full Audio Post-Production">
+<meta name="twitter:description" content="Dialogue editing, sound design, Foley and mixing in stereo and Dolby 5.1. Based in Dallas, Texas, working with filmmakers worldwide.">
+<meta name="twitter:image" content="https://puffluv.github.io/deverx-sound/img/og-deverx.jpg">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="preload" as="image" href="img/denis2-hero.webp">
-<link rel="stylesheet" href="css/main.css">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preload" href="fonts/mona-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="css/site.css">
+<script>document.documentElement.classList.add('js');</script>
+<script src="js/site.js" defer></script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ProfessionalService",
+  "name": "Deverx Sound Studio",
+  "description": "Film audio post-production: dialogue editing, sound design, Foley and mixing in stereo and Dolby 5.1.",
+  "url": "https://puffluv.github.io/deverx-sound/",
+  "image": "https://puffluv.github.io/deverx-sound/img/og-deverx.jpg",
+  "email": "denisplakhetko@icloud.com",
+  "address": { "@type": "PostalAddress", "addressLocality": "Dallas", "addressRegion": "TX", "addressCountry": "US" },
+  "areaServed": "Worldwide",
+  "founder": [
+    { "@type": "Person", "name": "Denis Plakhetko", "jobTitle": "Sound Designer and Re-recording Mixer" },
+    { "@type": "Person", "name": "Dalel Savarin" }
+  ]
+}
+</script>
 </head>
-<body class="booting">
+<body>
 
-  <div class="room-light" id="roomLight" aria-hidden="true"></div>
-  <div class="page-bg" id="pageBg"><canvas id="wavesBgCanvas" style="position:absolute;inset:0;width:100%;height:100%;display:block;"></canvas></div>
-  <div class="cinema-frame" aria-hidden="true"></div>
+<a class="skip" href="#main">Skip to content</a>
 
-  <nav class="sec-nav" id="secNav" aria-label="Sections">
-    <button class="sec-dot" data-sec="0"><span class="sec-tick"></span><span class="sec-label">About</span></button>
-    <button class="sec-dot" data-sec="1"><span class="sec-tick"></span><span class="sec-label">Trusted</span></button>
-    <button class="sec-dot" data-sec="2"><span class="sec-tick"></span><span class="sec-label">Reviews</span></button>
-    <button class="sec-dot" data-sec="3"><span class="sec-tick"></span><span class="sec-label">Education</span></button>
-    <button class="sec-dot" data-sec="4"><span class="sec-tick"></span><span class="sec-label">Contact</span></button>
+<header class="site-header" data-header>
+  <div class="wrap header-bar">
+    <a class="brand" href="#top" aria-label="Deverx Sound Studio — back to top">DEVERX</a>
+    <nav class="nav" aria-label="Main">
+      <ul>
+        <li><a href="#work">Work</a></li>
+        <li><a href="#services">Services</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </nav>
+    <a class="btn btn-ghost btn-small header-cta" href="https://wa.me/77078381488?text=Hi%20Deverx%20Sound%20Studio!%20I%27d%20like%20to%20discuss%20my%20film." target="_blank" rel="noopener">Discuss Your Film</a>
+    <button class="menu-btn" type="button" aria-expanded="false" aria-controls="menu" data-menu-toggle>
+      <span class="menu-btn-label">Menu</span>
+      <span class="menu-btn-icon" aria-hidden="true"><i></i><i></i></span>
+    </button>
+  </div>
+</header>
+
+<div class="menu" id="menu" data-menu hidden>
+  <nav class="wrap menu-inner" aria-label="Menu">
+    <ul class="menu-links">
+      <li><a href="#work">Work</a></li>
+      <li><a href="#services">Services</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <a class="btn btn-primary btn-block" href="https://wa.me/77078381488?text=Hi%20Deverx%20Sound%20Studio!%20I%27d%20like%20to%20discuss%20my%20film." target="_blank" rel="noopener">Discuss Your Film</a>
+    <p class="menu-meta">
+      <a href="https://wa.me/77078381488" target="_blank" rel="noopener">WhatsApp</a>
+      <a href="mailto:denisplakhetko@icloud.com">Email</a>
+      <a href="mentorship.html">Mentorship</a>
+    </p>
   </nav>
-  <div class="shutter" id="shutter" aria-hidden="true">
-    <div class="shutter-blade top"></div>
-    <div class="shutter-blade bottom"></div>
-  </div>
+</div>
 
-  <div class="title-block">
-    <p class="film-title" id="project-title">Process</p>
-    <div class="meta">
-      <span id="project-type">Sound Design Reel</span>
-    </div>
-  </div>
+<div class="house" aria-hidden="true"></div>
 
-  <div class="stage">
-    <canvas id="canvas"></canvas>
-    <div class="loading" id="loading">Loading film...</div>
-    <div class="error-box" id="errorBox"></div>
-  </div>
+<main id="main">
 
-  <!-- Hero intro: a real 3D mixing console. Scroll dollies the camera in; the
-       mouse parallaxes the scene; at the end it dissolves into the film. -->
-  <div class="hero" id="hero">
-    <div class="hero-photo" id="heroPhoto">
-      <div class="hero-photo-img" id="heroPhotoImg"></div>
-      <div class="hero-photo-glow"></div>
-    </div>
-    <div class="hero-veil"></div>
-    <div class="hero-content" id="heroContent">
-      <span class="hero-kicker">Full audio post production</span>
-      <h1 class="hero-title">Denis<br class="ht-break">Plakhetko</h1>
-      <p class="hero-sub">Sound design, Mixing &amp; Mastering</p>
-      <p class="hero-sub2">Stereo &amp; Dolby 5.1 Mixing</p>
-      <div class="hero-cta">
-        <button class="hero-btn primary" id="heroShowreel" type="button">
-          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
-          Showreel
-        </button>
-        <a class="hero-btn ghost" href="https://wa.me/77078381488" target="_blank" rel="noopener">Get in touch</a>
-      </div>
-    </div>
-    <canvas class="hero-wave" id="heroWave" aria-hidden="true"></canvas>
-    <div class="hero-meta" aria-hidden="true">
-      <span class="m-group"><span>Sound &middot; Mix &middot; Post</span></span>
-      <span class="m-group"><a href="https://wa.me/77078381488" target="_blank" rel="noopener">WhatsApp &#8599;</a></span>
-    </div>
-    <div class="hero-side-meta" aria-hidden="true"><span>Reel — 2026</span><span>Sound for picture</span></div>
-  </div>
-
-  <p class="sound-nudge" id="soundNudge" hidden>Turn the sound on &mdash; you&rsquo;re looking at a sound reel</p>
-  <div class="controls">
-    <button class="arrow sound-btn" id="soundToggle" type="button" aria-pressed="false" aria-label="Play the reel with sound">
-      <span class="sb-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
-      <span class="sb-label">Sound off</span>
-    </button>
-    <button class="arrow" id="prev" aria-label="Previous">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
-    </button>
-    <div class="dots" id="dots"></div>
-    <button class="arrow" id="next" aria-label="Next">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
-    </button>
-  </div>
-
-  <section class="about" id="about">
-    <div class="about-veil"></div>
-    <div class="about-inner">
-      <span class="about-kicker">About Me</span>
-      <h2>I’m Denis.</h2>
-      <p>A sound designer &amp; re-recording mixer with extensive experience in film and video — handling full audio post-production.</p>
-    </div>
-  </section>
-
-  <div class="deck-bg" id="deckBg">
-    <div class="deck-bg-inner" id="deckBgInner"></div>
-  </div>
-
-  <section class="trust" id="trust">
-    <div class="trust-head">
-      <span class="trust-kicker r-kicker">Trusted by</span>
-      <h2 class="r-title">Selected clients</h2>
-    </div>
-    <div class="trust-viewport">
-      <!-- Items are built by JS (LOGOS list, 3 copies) so the endless marquee
-           always has enough width and names stay in one place to edit. -->
-      <div class="trust-track" id="trustTrack"></div>
-    </div>
-  </section>
-
-  <section class="deck-section reviews" id="reviews">
-    <span class="deck-kicker r-kicker">Testimonials</span>
-    <h2 class="r-title">What collaborators say</h2>
-    <div class="review-viewport reveal">
-      <div class="review-rail" id="reviewRail">
-
-        <figure class="review-card">
-          <div class="review-head">
-            <span class="review-avatar"><img src="avatars/Paul Gerbert.jpg" loading="lazy" decoding="async" alt="Paul Gerbert" draggable="false" width="96" height="96"></span>
-            <span class="review-who"><span class="rv-name">Paul Gerbert</span><span class="rv-role">Producer / Director · Suspense Films</span></span>
-          </div>
-          <div class="review-body">Denis handled this work exceptionally well. He cleaned and shaped the dialogue, created effective sound design layers, balanced the trailer with music, applied appropriate compression and dynamics, and ultimately delivered a professional, cinematic mix that made the trailer fully industry-acceptable and significantly elevated its perceived production value.<br><br>I can confidently recommend Denis for high-level sound design and post-production work.</div>
-        </figure>
-
-        <figure class="review-card">
-          <div class="review-head">
-            <span class="review-avatar"><img src="avatars/Taiga Reveri.jpg" loading="lazy" decoding="async" alt="Taiga Reverie" draggable="false" width="96" height="96"></span>
-            <span class="review-who"><span class="rv-name">Taiga Reverie</span><span class="rv-role">Studio Director</span></span>
-          </div>
-          <div class="review-body">“I couldn't be more satisfied. This project was completed within the time promised and with high quality. Any revisions were done swiftly and with care. Excellent!”</div>
-        </figure>
-
-        <figure class="review-card">
-          <div class="review-head">
-            <span class="review-avatar"><img src="avatars/Egor K..jpg" loading="lazy" decoding="async" alt="Egor K." draggable="false" width="96" height="96"></span>
-            <span class="review-who"><span class="rv-name">Egor K.</span><span class="rv-role">Studio Director · K.A.M.I</span></span>
-          </div>
-          <div class="review-body">I want to give a big thanks to Denis for the sound work he did on our animated series Pingloo.<br><br>He was responsible for the sound design and overall audio post-production, and working with him was incredibly smooth throughout the project. Denis has a great instinct for atmosphere and really gets how audio affects the pacing and feeling of a scene. A lot of moments got noticeably stronger once his work was added.<br><br>I'd definitely recommend Denis to anyone looking for strong sound design for animation, film, or other visual projects. He cares about the final result and puts real effort into making scenes feel alive. I'd love to work with him again on future projects.</div>
-        </figure>
-
-        <figure class="review-card">
-          <div class="review-head">
-            <span class="review-avatar"><img src="avatars/July Baurova.jpg" loading="lazy" decoding="async" alt="July Baurova" draggable="false" width="96" height="96"></span>
-            <span class="review-who"><span class="rv-name">July Baurova</span><span class="rv-role">Motion Designer</span></span>
-          </div>
-          <div class="review-body">“I worked with Denis on an advertising project. He did everything quickly and efficiently. He was polite in communication. I recommend working with Denis.”</div>
-        </figure>
-
-        <figure class="review-card">
-          <div class="review-head">
-            <span class="review-avatar"><img src="avatars/Ivan Taran.jpg" loading="lazy" decoding="async" alt="Ivan Taran" draggable="false" width="96" height="96"></span>
-            <span class="review-who"><span class="rv-name">Ivan Taran</span><span class="rv-role">Motion Designer</span></span>
-          </div>
-          <div class="review-body">I am very satisfied with the sound design on our joint project. Everything was done to the highest standard, with attention to detail, and that was very important. Thank you.<br><br>I would be happy to collaborate again in the future.</div>
-        </figure>
-
-        <figure class="review-card">
-          <div class="review-head">
-            <span class="review-avatar"><img src="avatars/Amir Shagilbaev.jpg" loading="lazy" decoding="async" alt="Amir Shagilbaev" draggable="false" width="96" height="96"></span>
-            <span class="review-who"><span class="rv-name">Amir Shagilbaev</span><span class="rv-role">Director</span></span>
-          </div>
-          <div class="review-body">Denis, thank you very much for your work. I was truly impressed by your sense of sound and attention to detail. The film came to life and became much stronger after your work on it.<br><br>The dynamics, atmosphere, and overall sound were all of the highest quality. Most importantly, everything was completed on time.</div>
-        </figure>
-
-        <figure class="review-card">
-          <div class="review-head">
-            <span class="review-avatar"><img src="avatars/Wave Essence.jpg" loading="lazy" decoding="async" alt="Wave Essence" draggable="false" width="96" height="96"></span>
-            <span class="review-who"><span class="rv-name">Wave Essence</span><span class="rv-role">Studio Director</span></span>
-          </div>
-          <div class="review-body">Thank you for your work on the sound. You can really tell that you put a lot of care and effort into it. Everything is put together very neatly — nothing feels harsh or distracting, and nothing gets lost in the mix.<br><br>Overall, it's very comfortable to listen to, and you do great work.</div>
-        </figure>
-
-      </div>
-    </div>
-    <div class="review-hint reveal">drag to read more</div>
-  </section>
-
-  <section class="deck-section education" id="education">
-    <div class="edu-rail" id="eduRail">
-
-      <!-- 1 · What it is, and why the job is worth doing.
-           The philosophy line leads, because it is the strongest thing in the
-           whole section and it used to be buried on panel four. -->
-      <article class="edu-panel">
-        <div class="edu-inner wide">
-          <span class="edu-kick e-rev">Mentorship</span>
-          <h2 class="edu-title e-rev">Sound Design<br>Mentoring</h2>
-          <p class="edu-quote-sub e-rev">Sound design isn&rsquo;t a boring job about plugins. It&rsquo;s a craft where you build atmosphere, emotion and entire worlds through sound &mdash; everything I&rsquo;ve learned on real films, animation, commercials and games, in one mentorship. After a month you&rsquo;ll sound-design a scene from your favourite film on your own.</p>
-          <div class="edu-grid4">
-            <div class="edu-feat e-rev"><span class="ic">01</span><h4>Work remotely</h4><p>From anywhere in the world</p></div>
-            <div class="edu-feat e-rev"><span class="ic">02</span><h4>Creative projects</h4><p>Films, animation, ads &amp; games</p></div>
-            <div class="edu-feat e-rev"><span class="ic">03</span><h4>$1000+</h4><p>Income potential and up</p></div>
-            <div class="edu-feat e-rev"><span class="ic">04</span><h4>Heard by millions</h4><p>Your work, on real screens</p></div>
+  <!-- 1 · Hero -->
+  <section class="hero" id="top" aria-labelledby="hero-title">
+    <div class="wrap">
+      <h1 class="hero-title" id="hero-title">
+        <span class="w w1"><span>Deverx</span></span>
+        <span class="w w2"><span>Sound</span></span>
+        <span class="w w3"><span>Studio</span></span>
+      </h1>
+      <div class="hero-info">
+        <div class="hero-main">
+          <p class="hero-sub">Full Audio Post-Production</p>
+          <p class="hero-by">by Denis Plakhetko</p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#showreel" data-watch>
+              <svg class="btn-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 2.8v10.4c0 .6.7 1 1.2.6l8-5.2c.5-.3.5-1 0-1.3l-8-5.2c-.5-.3-1.2 0-1.2.7z" fill="currentColor"/></svg>
+              Watch Showreel
+            </a>
+            <a class="btn btn-ghost" href="https://wa.me/77078381488?text=Hi%20Deverx%20Sound%20Studio!%20I%27d%20like%20to%20discuss%20my%20film." target="_blank" rel="noopener">Discuss Your Film</a>
           </div>
         </div>
-      </article>
-
-      <!-- 2 · Everything that used to be the 14-item wall plus the separate
-           "what you get" list, grouped into the four things they actually are. -->
-      <article class="edu-panel">
-        <div class="edu-inner wide">
-          <span class="edu-kick e-rev">What you&rsquo;ll learn</span>
-          <div class="edu-groups">
-            <div class="edu-group e-rev">
-              <h4><span class="gn">01</span> Ear &amp; craft</h4>
-              <p>Training your ear to hear sound that isn&rsquo;t there yet. How to stylize sound. How to think like a sound designer.</p>
-            </div>
-            <div class="edu-group e-rev">
-              <h4><span class="gn">02</span> Tools</h4>
-              <p>Choosing a DAW and the trade-offs of each. Plugin types, what they actually do, and my go-to set. Headphones and studio gear &mdash; what to buy and why.</p>
-            </div>
-            <div class="edu-group e-rev">
-              <h4><span class="gn">03</span> The work</h4>
-              <p>How to approach a project properly. The technical side of getting the sound you hear in your head. Working with music and voice (processing, not composing). Mixing &amp; mastering.</p>
-            </div>
-            <div class="edu-group e-rev">
-              <h4><span class="gn">04</span> What you leave with</h4>
-              <p>A portfolio built around you, detailed reviews of your work, a real understanding of how the industry runs &mdash; and genuine confidence with sound.</p>
-            </div>
-          </div>
+        <div class="hero-side">
+          <ul class="credits" aria-label="Services">
+            <li>Dialogue Editing</li>
+            <li>Sound Design</li>
+            <li>Foley</li>
+            <li>Mixing</li>
+            <li>Dolby 5.1</li>
+          </ul>
+          <p class="hero-place"><span class="place-line">Based in Dallas, Texas</span><span class="place-sep" aria-hidden="true"> · </span><span class="place-line">Working Worldwide</span></p>
         </div>
-      </article>
-
-      <!-- 3 · Price and how to apply. -->
-      <article class="edu-panel">
-        <div class="edu-inner">
-          <span class="edu-kick e-rev">Enrolment</span>
-          <div class="edu-price-card e-rev">
-            <span class="pc-label">Private 1-on-1 mentorship</span>
-            <div class="pc-figure"><span class="pc-price">$600</span><span class="pc-dur">/ 4 months</span></div>
-            <ul class="pc-included">
-              <li>Hands-on practice with feedback on every piece</li>
-              <li>A personal, one-to-one pace &mdash; not a recorded course</li>
-              <li>Real deadlines throughout, the way the industry actually runs</li>
-            </ul>
-            <p class="pc-note">Those deadlines are the point: they build the discipline the work demands.</p>
-            <a class="edu-cta" href="https://wa.me/77078381488" target="_blank" rel="noopener">Apply via WhatsApp &rarr;</a>
-          </div>
-        </div>
-      </article>
-
-    </div>
-
-    <div class="edu-ui">
-      <div class="edu-progress"><span id="eduBar"></span></div>
-      <div class="edu-hint" id="eduHint">scroll <span class="arrow">→</span></div>
-    </div>
-  </section>
-
-  <section class="deck-section contacts" id="contacts">
-    <span class="deck-kicker r-kicker">Contact</span>
-    <h2 class="r-title">Let’s talk about your picture.</h2>
-    <a class="contact-mail reveal" href="https://wa.me/77078381488" target="_blank" rel="noopener">+7 707 838 1488</a>
-    <p class="contact-sub reveal">WhatsApp · or reach me directly below</p>
-    <div class="contact-links reveal">
-      <a href="mailto:denisplakhetko@icloud.com">denisplakhetko@icloud.com</a>
-    </div>
-    <span class="reveal" style="display:inline-block;"><a class="contact-cta" href="https://wa.me/77078381488" target="_blank" rel="noopener">Message me on WhatsApp</a></span>
-  </section>
-
-  <section class="video-player" id="videoPlayer" aria-hidden="true">
-    <div class="video-shell">
-      <video id="mainVideo" playsinline></video>
-      <div class="player-vignette" aria-hidden="true"></div>
-      <div class="player-top">
-        <div class="player-title" id="playerTitle">Selected work</div>
-        <button class="player-btn" id="closePlayer" aria-label="Close">X</button>
-      </div>
-      <div class="player-controls">
-        <button class="player-btn" id="playPause" aria-label="Play or pause">II</button>
-        <input class="player-range" id="timeline" type="range" min="0" max="1000" value="0" aria-label="Timeline">
-        <div class="timecode" id="timecode">0:00 / 0:00</div>
-        <input class="player-range volume" id="volume" type="range" min="0" max="1" step="0.01" value="0.86" aria-label="Volume">
-        <button class="player-btn" id="fullscreenBtn" aria-label="Fullscreen">[]</button>
       </div>
     </div>
   </section>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- 2 · Showreel + selected work (one player, the films below it) -->
+  <section class="reel" id="work" aria-labelledby="reel-title">
+    <h2 class="sr-only" id="reel-title">Showreel and selected work</h2>
+    <div class="wrap">
+      <div class="screen-frame">
+        <!-- the screen lights the dark room in the colours of the film on it -->
+        <div class="ambient" aria-hidden="true"><img src="img/work/qorqynysh-shegi-thumb.webp" width="640" height="360" alt="" data-ambient></div>
+        <div class="screen" id="showreel" data-screen>
+          <a class="screen-poster" href="https://youtu.be/ixgmapeG-d8" target="_blank" rel="noopener" data-poster aria-label="Play Qorqynysh Shegi, feature film sizzle reel">
+            <img src="img/work/qorqynysh-shegi.webp" srcset="img/work/qorqynysh-shegi-768.webp 768w, img/work/qorqynysh-shegi.webp 1280w" sizes="(min-width: 1500px) 1360px, 92vw" width="1280" height="720" alt="" data-poster-img>
+            <span class="screen-play" aria-hidden="true">
+              <span class="screen-play-ring"><svg viewBox="0 0 16 16"><path d="M4.5 2.8v10.4c0 .6.7 1 1.2.6l8-5.2c.5-.3.5-1 0-1.3l-8-5.2c-.5-.3-1.2 0-1.2.7z" fill="currentColor"/></svg></span>
+              <span class="screen-play-label">Play with sound</span>
+            </span>
+          </a>
+          <div class="screen-player" data-player></div>
+        </div>
+      </div>
 
-<script type="module" src="js/app.js"></script>
+      <p class="now" aria-live="polite">
+        <span class="now-title" data-now-title>Qorqynysh Shegi</span>
+        <span class="now-kind" data-now-kind>Feature film sizzle reel</span>
+        <span class="now-time" data-now-time>1:46</span>
+      </p>
+
+      <div class="films-head">
+        <h3 class="films-title">Selected work</h3>
+        <p class="films-hint">Choose a film to play it on the screen.</p>
+      </div>
+      <ol class="films">
+        <li>
+          <a class="film is-active" href="https://youtu.be/ixgmapeG-d8" target="_blank" rel="noopener" aria-current="true"
+             data-video="ixgmapeG-d8" data-slug="qorqynysh-shegi" data-title="Qorqynysh Shegi" data-kind="Feature film sizzle reel" data-time="1:46">
+            <span class="film-thumb"><img src="img/work/qorqynysh-shegi-thumb.webp" width="640" height="360" alt="" loading="lazy" decoding="async"><span class="film-time">1:46</span></span>
+            <span class="film-text"><span class="film-title">Qorqynysh Shegi</span><span class="film-kind">Feature film</span></span>
+          </a>
+        </li>
+        <li>
+          <a class="film" href="https://youtu.be/ueyhOkTnleM" target="_blank" rel="noopener"
+             data-video="ueyhOkTnleM" data-slug="nevo" data-title="NEVO" data-kind="Feature film sizzle reel · a Paul Gerbert film" data-time="2:27">
+            <span class="film-thumb"><img src="img/work/nevo-thumb.webp" width="640" height="360" alt="" loading="lazy" decoding="async"><span class="film-time">2:27</span></span>
+            <span class="film-text"><span class="film-title">NEVO</span><span class="film-kind">Feature film</span></span>
+          </a>
+        </li>
+        <li>
+          <a class="film" href="https://youtu.be/0fNFyv3hy4o" target="_blank" rel="noopener"
+             data-video="0fNFyv3hy4o" data-slug="sound-design-process" data-title="Sound Design Process" data-kind="Studio reel" data-time="0:11">
+            <span class="film-thumb"><img src="img/work/sound-design-process-thumb.webp" width="640" height="360" alt="" loading="lazy" decoding="async"><span class="film-time">0:11</span></span>
+            <span class="film-text"><span class="film-title">Sound Design Process</span><span class="film-kind">Studio reel</span></span>
+          </a>
+        </li>
+        <li>
+          <a class="film" href="https://youtu.be/b22DwqTjdJw" target="_blank" rel="noopener"
+             data-video="b22DwqTjdJw" data-slug="300" data-title="300" data-kind="Sound redesign" data-time="0:15">
+            <span class="film-thumb"><img src="img/work/300-thumb.webp" width="640" height="360" alt="" loading="lazy" decoding="async"><span class="film-time">0:15</span></span>
+            <span class="film-text"><span class="film-title">300</span><span class="film-kind">Sound redesign</span></span>
+          </a>
+        </li>
+        <li>
+          <a class="film" href="https://youtu.be/WYqq9zoapXw" target="_blank" rel="noopener"
+             data-video="WYqq9zoapXw" data-slug="dead-space" data-title="Dead Space" data-kind="Game sound redesign" data-time="0:45">
+            <span class="film-thumb"><img src="img/work/dead-space-thumb.webp" width="640" height="360" alt="" loading="lazy" decoding="async"><span class="film-time">0:45</span></span>
+            <span class="film-text"><span class="film-title">Dead Space</span><span class="film-kind">Sound redesign</span></span>
+          </a>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- 3 · From Edit to Final Mix -->
+  <section class="section mix" id="services" aria-labelledby="mix-title">
+    <div class="wrap mix-grid">
+      <div class="mix-copy">
+        <h2 class="h2" id="mix-title">From Edit to Final Mix</h2>
+        <p class="lead">We can handle the complete audio post-production workflow and keep the creative direction consistent from the first dialogue edit to the final mix.</p>
+      </div>
+
+      <figure class="session" data-session aria-label="A film mix session: dialogue, sound design, Foley and ambience tracks summed into one final mix">
+        <div class="session-ruler" aria-hidden="true">
+          <span>01:00:00:00</span>
+          <span class="session-tc" data-tc>01:00:00:00</span>
+        </div>
+        <div class="session-body">
+          <div class="lane"><span class="lane-name">Dialogue</span><span class="lane-wave" data-kind="dialogue"></span><span class="meter" data-meter="dialogue" aria-hidden="true"><i></i></span></div>
+          <div class="lane"><span class="lane-name">Sound design</span><span class="lane-wave" data-kind="design"></span><span class="meter" data-meter="design" aria-hidden="true"><i></i></span></div>
+          <div class="lane"><span class="lane-name">Foley</span><span class="lane-wave" data-kind="foley"></span><span class="meter" data-meter="foley" aria-hidden="true"><i></i></span></div>
+          <div class="lane"><span class="lane-name">Ambience</span><span class="lane-wave" data-kind="ambience"></span><span class="meter" data-meter="ambience" aria-hidden="true"><i></i></span></div>
+          <div class="lane lane-mix"><span class="lane-name">Final mix</span><span class="lane-wave" data-kind="mix"></span><span class="meter meter-stereo" data-meter="mix" aria-hidden="true"><i></i><i></i></span></div>
+          <span class="playhead-track" aria-hidden="true"><span class="playhead"></span></span>
+        </div>
+        <figcaption class="session-foot"><span>Stereo</span><span>Dolby 5.1</span></figcaption>
+      </figure>
+
+      <ul class="points">
+        <li>
+          <h3>Full audio post-production</h3>
+          <p>Dialogue editing, sound design, Foley, ambience and the mix, in one studio.</p>
+        </li>
+        <li>
+          <h3>Direct collaboration</h3>
+          <p>You talk directly with the people working on your sound.</p>
+        </li>
+        <li>
+          <h3>Consistent creative direction</h3>
+          <p>The same ears on your film from the first edit to the final mix.</p>
+        </li>
+        <li>
+          <h3>Remote workflow</h3>
+          <p>Send picture and files from anywhere, and review the work online.</p>
+        </li>
+        <li>
+          <h3>Stereo &amp; Dolby 5.1</h3>
+          <p>Final mixes delivered in stereo and 5.1 surround.</p>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 4 · How It Works -->
+  <section class="section process" id="process" aria-labelledby="process-title">
+    <div class="wrap">
+      <h2 class="h2" id="process-title">How It Works</h2>
+      <ol class="steps">
+        <li class="step">
+          <span class="step-no">01</span>
+          <h3>We Discuss the Film</h3>
+          <p>We talk about your film, creative references, goals, timeline and project details.</p>
+        </li>
+        <li class="step">
+          <span class="step-no">02</span>
+          <h3>You Send the Materials</h3>
+          <p>You send the picture lock and the necessary files we discussed.</p>
+        </li>
+        <li class="step">
+          <span class="step-no">03</span>
+          <h3>Sound Post</h3>
+          <p>We work on the dialogue, sound design, Foley, ambience and mix.</p>
+        </li>
+        <li class="step">
+          <span class="step-no">04</span>
+          <h3>Review &amp; Final Delivery</h3>
+          <p>You review the work, we make the agreed revisions, and deliver the final mixes.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- 7 · Testimonials -->
+  <section class="section voices" id="testimonials" aria-labelledby="voices-title">
+    <div class="wrap">
+      <h2 class="h2" id="voices-title">What Filmmakers Say</h2>
+
+      <figure class="quote quote-lead">
+        <blockquote>
+          <p>&ldquo;Denis handled this work exceptionally well. He cleaned and shaped the dialogue, created effective sound design layers, balanced the trailer with music&hellip; and ultimately delivered a professional, cinematic mix that made the trailer fully industry-acceptable and significantly elevated its perceived production value.&rdquo;</p>
+        </blockquote>
+        <figcaption>
+          <img class="avatar" src="img/people/paul-gerbert.webp" width="192" height="192" alt="" loading="lazy" decoding="async">
+          <span class="who"><span class="who-name">Paul Gerbert</span><span class="who-role">Producer / Director, Suspense Films · <a href="https://youtu.be/ueyhOkTnleM" target="_blank" rel="noopener" data-play="ueyhOkTnleM">NEVO</a></span></span>
+        </figcaption>
+      </figure>
+
+      <div class="quotes">
+        <figure class="quote">
+          <blockquote>
+            <p>&ldquo;He was responsible for the sound design and overall audio post-production, and working with him was incredibly smooth throughout the project. Denis has a great instinct for atmosphere and really gets how audio affects the pacing and feeling of a scene.&rdquo;</p>
+          </blockquote>
+          <figcaption>
+            <img class="avatar" src="img/people/egor-k.webp" width="192" height="192" alt="" loading="lazy" decoding="async">
+            <span class="who"><span class="who-name">Egor K.</span><span class="who-role">Studio Director, K.A.M.I · Pingloo, animated series</span></span>
+          </figcaption>
+        </figure>
+        <figure class="quote">
+          <blockquote>
+            <p>&ldquo;I was truly impressed by your sense of sound and attention to detail. The film came to life and became much stronger after your work on it. The dynamics, atmosphere, and overall sound were all of the highest quality. Most importantly, everything was completed on time.&rdquo;</p>
+          </blockquote>
+          <figcaption>
+            <img class="avatar" src="img/people/amir-shagilbaev.webp" width="192" height="192" alt="" loading="lazy" decoding="async">
+            <span class="who"><span class="who-name">Amir Shagilbaev</span><span class="who-role">Director</span></span>
+          </figcaption>
+        </figure>
+        <figure class="quote">
+          <blockquote>
+            <p>&ldquo;You can really tell that you put a lot of care and effort into it. Everything is put together very neatly &mdash; nothing feels harsh or distracting, and nothing gets lost in the mix.&rdquo;</p>
+          </blockquote>
+          <figcaption>
+            <img class="avatar" src="img/people/wave-essence.webp" width="192" height="192" alt="" loading="lazy" decoding="async">
+            <span class="who"><span class="who-name">Wave Essence</span><span class="who-role">Studio Director</span></span>
+          </figcaption>
+        </figure>
+        <figure class="quote">
+          <blockquote>
+            <p>&ldquo;I couldn&rsquo;t be more satisfied. This project was completed within the time promised and with high quality. Any revisions were done swiftly and with care.&rdquo;</p>
+          </blockquote>
+          <figcaption>
+            <img class="avatar" src="img/people/taiga-reverie.webp" width="192" height="192" alt="" loading="lazy" decoding="async">
+            <span class="who"><span class="who-name">Taiga Reverie</span><span class="who-role">Studio Director</span></span>
+          </figcaption>
+        </figure>
+      </div>
+
+      <div class="clients">
+        <p class="clients-label">Studios and brands we&rsquo;ve worked with</p>
+        <ul class="client-logos">
+          <li><img src="img/clients/loreal.webp" width="420" height="76" style="--h:26" alt="L'Oréal" loading="lazy" decoding="async"></li>
+          <li><img src="img/clients/suspense-films.webp" width="420" height="119" style="--h:27" alt="Suspense Films" loading="lazy" decoding="async"></li>
+          <li><img src="img/clients/nikita-kolesnik.webp" width="295" height="120" style="--h:33" alt="Nikita Kolesnik Film Studio" loading="lazy" decoding="async"></li>
+          <li><img src="img/clients/prana-spring.webp" width="260" height="120" style="--h:35" alt="Prana Spring" loading="lazy" decoding="async"></li>
+          <li><img src="img/clients/multitusya.webp" width="194" height="120" style="--h:40" alt="Multitusya" loading="lazy" decoding="async"></li>
+          <li><img src="img/clients/oonga.webp" width="420" height="119" style="--h:27" alt="Oonga" loading="lazy" decoding="async"></li>
+          <li><img src="img/clients/taiga-reverie.webp" width="129" height="120" style="--h:48" alt="Taiga Reverie" loading="lazy" decoding="async"></li>
+          <li><img src="img/clients/kami.webp" width="120" height="120" style="--h:48" alt="K.A.M.I" loading="lazy" decoding="async"></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8 · About -->
+  <section class="section about" id="about" aria-labelledby="about-title">
+    <div class="wrap about-grid">
+      <div class="about-copy">
+        <h2 class="h2" id="about-title">About Deverx Sound Studio</h2>
+        <p class="lead">Deverx Sound Studio is a film audio post-production studio founded by Dalel Savarin and Denis Plakhetko. The studio is led by Denis, a sound designer and re-recording mixer.</p>
+        <p class="lead">Based in Dallas, Texas, we work remotely with filmmakers and production teams worldwide.</p>
+        <dl class="team">
+          <div><dt>Denis Plakhetko</dt><dd>Founder, sound designer and re-recording mixer</dd></div>
+          <div><dt>Dalel Savarin</dt><dd>Co-founder</dd></div>
+        </dl>
+      </div>
+      <figure class="portrait">
+        <img src="img/people/denis-plakhetko.webp" width="642" height="1100" alt="Denis Plakhetko in profile, black and white" loading="lazy" decoding="async">
+      </figure>
+    </div>
+  </section>
+
+  <!-- 9 · Final CTA -->
+  <section class="section cta" id="contact" aria-labelledby="cta-title">
+    <div class="wrap">
+      <h2 class="cta-title" id="cta-title">Your film deserves cinematic sound.</h2>
+      <p class="lead">Tell us a little about your project, and we&rsquo;ll get back to you with the next steps.</p>
+      <div class="cta-actions">
+        <a class="btn btn-primary btn-large" href="https://wa.me/77078381488?text=Hi%20Deverx%20Sound%20Studio!%20I%27d%20like%20to%20discuss%20my%20film." target="_blank" rel="noopener">Discuss Your Film</a>
+        <ul class="channels">
+          <li><a href="https://wa.me/77078381488" target="_blank" rel="noopener"><span class="channel-name">WhatsApp</span><span class="channel-detail">+7 707 838 1488</span></a></li>
+          <li><a href="mailto:denisplakhetko@icloud.com?subject=Film%20project"><span class="channel-name">Email</span><span class="channel-detail">denisplakhetko@icloud.com</span></a></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- 10 · Footer -->
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div class="footer-brand">
+      <p class="footer-name">Deverx Sound Studio</p>
+      <p>Full Audio Post-Production</p>
+      <p>Based in Dallas, Texas · Working Worldwide</p>
+    </div>
+    <nav class="footer-col" aria-label="Footer">
+      <ul>
+        <li><a href="#work">Work</a></li>
+        <li><a href="#services">Services</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </nav>
+    <ul class="footer-col">
+      <li><a href="https://wa.me/77078381488" target="_blank" rel="noopener">WhatsApp</a></li>
+      <li><a href="mailto:denisplakhetko@icloud.com">Email</a></li>
+    </ul>
+    <ul class="footer-col">
+      <li><a href="mentorship.html">Mentorship</a></li>
+    </ul>
+    <p class="footer-legal">&copy; <span data-year>2026</span> Deverx Sound Studio</p>
+  </div>
+</footer>
 
 </body>
 </html>
