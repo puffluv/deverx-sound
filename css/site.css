@@ -672,19 +672,6 @@ button { font: inherit; color: inherit; }
 .quotes .quote { padding-top: 28px; border-top: 1px solid var(--line); max-width: 36em; }
 .quotes blockquote p { font-size: clamp(1.1875rem, 1.45vw, 1.3125rem); line-height: 1.5; color: var(--ivory); text-indent: -0.38em; }
 
-.clients {
-  margin-top: clamp(88px, 10vw, 144px); padding-top: 28px; border-top: 1px solid var(--line);
-}
-.clients-label { font-size: 0.9375rem; color: var(--dim); }
-.client-logos {
-  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
-  gap: 28px 32px; margin-top: 32px;
-}
-.client-logos img {
-  width: auto; height: calc(var(--h) * 1.1px);
-  opacity: 0.62; transition: opacity 0.3s;
-}
-.client-logos li:hover img { opacity: 1; }
 
 /* ---------- 8 · About ---------- */
 
@@ -702,20 +689,14 @@ button { font: inherit; color: inherit; }
 .founder:first-child { grid-column: 1 / span 3; grid-row: 1; }
 .founder:last-child { grid-column: 10 / span 3; grid-row: 1; }
 .founder { align-self: start; }
+/* The portraits carry their own light: a warm, grainy halo behind each head,
+   baked into the image so it looks the same in every browser. */
 .founder-photo {
-  position: relative; aspect-ratio: 4 / 5; border-radius: 6px; overflow: hidden;
-  /* a warm key light behind each head, the rest of the frame in shadow */
-  background:
-    radial-gradient(54% 42% at var(--kx, 50%) var(--ky, 32%), rgba(243, 166, 75, 0.28), rgba(243, 166, 75, 0.05) 62%, transparent 82%),
-    linear-gradient(180deg, #1b1f25, #0b0d10);
+  aspect-ratio: 4 / 5; border-radius: 6px; overflow: hidden;
+  background: #16110e;
+  box-shadow: 0 0 0 1px rgba(242, 237, 228, 0.06);
 }
-.founder-photo img {
-  position: absolute; bottom: 0; left: 50%;
-  height: 95%; width: auto; max-width: none;
-  transform: translateX(var(--tx, -50%));
-}
-.founder-denis { --kx: 40%; --ky: 30%; --tx: -40%; }
-.founder-dalel { --kx: 50%; --ky: 27%; }
+.founder-photo img { width: 100%; height: 100%; object-fit: cover; }
 .founder figcaption { display: flex; flex-direction: column; gap: 2px; margin-top: 14px; }
 .founder-name { font-weight: 620; }
 .founder-role { font-size: 0.9375rem; line-height: 1.4; color: var(--dim); }
@@ -830,7 +811,6 @@ button { font: inherit; color: inherit; }
   .steps::before { display: none; }
   .step { border-top: 1px solid var(--line); padding-top: 40px; }
   .step::before { top: -1px; }
-  .client-logos { justify-content: flex-start; gap: 28px 44px; }
   .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
