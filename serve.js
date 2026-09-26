@@ -44,11 +44,9 @@ const server = http.createServer((req, res) => {
     const ext = path.extname(filePath).toLowerCase();
     const type = MIME[ext] || 'application/octet-stream';
     const total = stat.size;
-    // HTML must always revalidate (it changes); media/fonts are immutable-ish
-    // assets — let browsers keep them for a week so repeat visits are instant.
-    const cache = (ext === '.html' || ext === '.js' || ext === '.css')
-      ? 'no-cache'
-      : 'public, max-age=604800';
+    // Local preview server: never let the browser hold on to an old copy,
+    // so every edit (images included) shows up on a plain reload.
+    const cache = 'no-cache';
     const headers = {
       'Content-Type': type,
       'Accept-Ranges': 'bytes',

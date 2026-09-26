@@ -96,6 +96,7 @@
         <span class="w w2"><span>Sound</span></span>
         <span class="w w3"><span>Studio</span></span>
       </h1>
+      <div class="hero-wave" aria-hidden="true" data-hero-wave></div>
       <div class="hero-info">
         <div class="hero-main">
           <p class="hero-sub">Full Audio Post-Production</p>
@@ -122,72 +123,85 @@
     </div>
   </section>
 
-  <!-- 2 · Showreel + selected work (one player, the films below it) -->
+  <!-- 2 · Showreel + selected work (one player; the films beside it, or below on phones) -->
   <section class="reel" id="work" aria-labelledby="reel-title">
-    <h2 class="sr-only" id="reel-title">Showreel and selected work</h2>
     <div class="wrap">
-      <div class="screen-frame">
-        <!-- the screen lights the dark room in the colours of the film on it -->
-        <div class="ambient" aria-hidden="true"><img src="img/work/qorqynysh-shegi-thumb.webp" width="640" height="360" alt="" data-ambient></div>
-        <div class="screen" id="showreel" data-screen>
-          <a class="screen-poster" href="https://youtu.be/ixgmapeG-d8" target="_blank" rel="noopener" data-poster aria-label="Play Qorqynysh Shegi, feature film sizzle reel">
-            <img src="img/work/qorqynysh-shegi.webp" srcset="img/work/qorqynysh-shegi-768.webp 768w, img/work/qorqynysh-shegi.webp 1280w" sizes="(min-width: 1500px) 1360px, 92vw" width="1280" height="720" alt="" data-poster-img>
-            <span class="screen-play" aria-hidden="true">
-              <span class="screen-play-ring"><svg viewBox="0 0 16 16"><path d="M4.5 2.8v10.4c0 .6.7 1 1.2.6l8-5.2c.5-.3.5-1 0-1.3l-8-5.2c-.5-.3-1.2 0-1.2.7z" fill="currentColor"/></svg></span>
-              <span class="screen-play-label">Play with sound</span>
-            </span>
-          </a>
-          <div class="screen-player" data-player></div>
+      <div class="reel-head">
+        <div class="reel-ruler" aria-hidden="true"><span>01:00:00:00</span></div>
+        <h2 class="h2" id="reel-title">Showreel</h2>
+        <p class="reel-note">Five films, best heard with headphones.</p>
+      </div>
+
+      <div class="reel-stage">
+        <div class="reel-main">
+          <div class="screen-frame">
+            <!-- the screen lights the dark room in the colours of the film on it -->
+            <div class="ambient" aria-hidden="true"><img src="img/work/qorqynysh-shegi-thumb.webp" width="640" height="360" alt="" data-ambient></div>
+            <div class="screen" id="showreel" data-screen>
+              <a class="screen-poster" href="https://youtu.be/ixgmapeG-d8" target="_blank" rel="noopener" data-poster aria-label="Play Qorqynysh Shegi, feature film sizzle reel">
+                <img src="img/work/qorqynysh-shegi.webp" srcset="img/work/qorqynysh-shegi-768.webp 768w, img/work/qorqynysh-shegi.webp 1280w" sizes="(min-width: 1700px) 1700px, 100vw" width="1280" height="720" alt="" data-poster-img>
+                <span class="screen-play" aria-hidden="true">
+                  <span class="screen-play-ring"><svg viewBox="0 0 16 16"><path d="M4.5 2.8v10.4c0 .6.7 1 1.2.6l8-5.2c.5-.3.5-1 0-1.3l-8-5.2c-.5-.3-1.2 0-1.2.7z" fill="currentColor"/></svg></span>
+                  <span class="screen-play-label">Play with sound</span>
+                </span>
+              </a>
+              <div class="screen-player" data-player></div>
+            </div>
+          </div>
+          <div class="now-bar">
+            <p class="now" aria-live="polite">
+              <span class="now-title" data-now-title>Qorqynysh Shegi</span>
+              <span class="now-kind" data-now-kind>Feature film sizzle reel</span>
+              <span class="now-time" data-now-time>1:46</span>
+            </p>
+            <button class="now-close" type="button" data-close aria-label="Close the film">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg>
+              <span>Close</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="playlist">
+          <h3 class="films-title">Selected work</h3>
+          <ol class="films">
+            <li>
+              <a class="film is-active" href="https://youtu.be/ixgmapeG-d8" target="_blank" rel="noopener" aria-current="true"
+                 data-video="ixgmapeG-d8" data-slug="qorqynysh-shegi" data-title="Qorqynysh Shegi" data-kind="Feature film sizzle reel" data-time="1:46">
+                <span class="film-thumb"><img src="img/work/qorqynysh-shegi-thumb.webp" width="640" height="360" alt="" loading="lazy" decoding="async"><span class="film-time">1:46</span></span>
+                <span class="film-text"><span class="film-title">Qorqynysh Shegi</span><span class="film-kind">Feature film</span></span>
+              </a>
+            </li>
+            <li>
+              <a class="film" href="https://youtu.be/ueyhOkTnleM" target="_blank" rel="noopener"
+                 data-video="ueyhOkTnleM" data-slug="nevo" data-title="NEVO" data-kind="Feature film sizzle reel · a Paul Gerbert film" data-time="2:27">
+                <span class="film-thumb"><img src="img/work/nevo-thumb.webp" width="640" height="360" alt="" loading="lazy" decoding="async"><span class="film-time">2:27</span></span>
+                <span class="film-text"><span class="film-title">NEVO</span><span class="film-kind">Feature film</span></span>
+              </a>
+            </li>
+            <li>
+              <a class="film" href="https://youtu.be/0fNFyv3hy4o" target="_blank" rel="noopener"
+                 data-video="0fNFyv3hy4o" data-slug="sound-design-process" data-title="Sound Design Process" data-kind="Studio reel" data-time="0:11">
+                <span class="film-thumb"><img src="img/work/sound-design-process-thumb.webp" width="640" height="360" alt="" loading="lazy" decoding="async"><span class="film-time">0:11</span></span>
+                <span class="film-text"><span class="film-title">Sound Design Process</span><span class="film-kind">Studio reel</span></span>
+              </a>
+            </li>
+            <li>
+              <a class="film" href="https://youtu.be/b22DwqTjdJw" target="_blank" rel="noopener"
+                 data-video="b22DwqTjdJw" data-slug="300" data-title="300" data-kind="Sound redesign" data-time="0:15">
+                <span class="film-thumb"><img src="img/work/300-thumb.webp" width="640" height="360" alt="" loading="lazy" decoding="async"><span class="film-time">0:15</span></span>
+                <span class="film-text"><span class="film-title">300</span><span class="film-kind">Sound redesign</span></span>
+              </a>
+            </li>
+            <li>
+              <a class="film" href="https://youtu.be/WYqq9zoapXw" target="_blank" rel="noopener"
+                 data-video="WYqq9zoapXw" data-slug="dead-space" data-title="Dead Space" data-kind="Game sound redesign" data-time="0:45">
+                <span class="film-thumb"><img src="img/work/dead-space-thumb.webp" width="640" height="360" alt="" loading="lazy" decoding="async"><span class="film-time">0:45</span></span>
+                <span class="film-text"><span class="film-title">Dead Space</span><span class="film-kind">Sound redesign</span></span>
+              </a>
+            </li>
+          </ol>
         </div>
       </div>
-
-      <p class="now" aria-live="polite">
-        <span class="now-title" data-now-title>Qorqynysh Shegi</span>
-        <span class="now-kind" data-now-kind>Feature film sizzle reel</span>
-        <span class="now-time" data-now-time>1:46</span>
-      </p>
-
-      <div class="films-head">
-        <h3 class="films-title">Selected work</h3>
-        <p class="films-hint">Choose a film to play it on the screen.</p>
-      </div>
-      <ol class="films">
-        <li>
-          <a class="film is-active" href="https://youtu.be/ixgmapeG-d8" target="_blank" rel="noopener" aria-current="true"
-             data-video="ixgmapeG-d8" data-slug="qorqynysh-shegi" data-title="Qorqynysh Shegi" data-kind="Feature film sizzle reel" data-time="1:46">
-            <span class="film-thumb"><img src="img/work/qorqynysh-shegi-thumb.webp" width="640" height="360" alt="" loading="lazy" decoding="async"><span class="film-time">1:46</span></span>
-            <span class="film-text"><span class="film-title">Qorqynysh Shegi</span><span class="film-kind">Feature film</span></span>
-          </a>
-        </li>
-        <li>
-          <a class="film" href="https://youtu.be/ueyhOkTnleM" target="_blank" rel="noopener"
-             data-video="ueyhOkTnleM" data-slug="nevo" data-title="NEVO" data-kind="Feature film sizzle reel · a Paul Gerbert film" data-time="2:27">
-            <span class="film-thumb"><img src="img/work/nevo-thumb.webp" width="640" height="360" alt="" loading="lazy" decoding="async"><span class="film-time">2:27</span></span>
-            <span class="film-text"><span class="film-title">NEVO</span><span class="film-kind">Feature film</span></span>
-          </a>
-        </li>
-        <li>
-          <a class="film" href="https://youtu.be/0fNFyv3hy4o" target="_blank" rel="noopener"
-             data-video="0fNFyv3hy4o" data-slug="sound-design-process" data-title="Sound Design Process" data-kind="Studio reel" data-time="0:11">
-            <span class="film-thumb"><img src="img/work/sound-design-process-thumb.webp" width="640" height="360" alt="" loading="lazy" decoding="async"><span class="film-time">0:11</span></span>
-            <span class="film-text"><span class="film-title">Sound Design Process</span><span class="film-kind">Studio reel</span></span>
-          </a>
-        </li>
-        <li>
-          <a class="film" href="https://youtu.be/b22DwqTjdJw" target="_blank" rel="noopener"
-             data-video="b22DwqTjdJw" data-slug="300" data-title="300" data-kind="Sound redesign" data-time="0:15">
-            <span class="film-thumb"><img src="img/work/300-thumb.webp" width="640" height="360" alt="" loading="lazy" decoding="async"><span class="film-time">0:15</span></span>
-            <span class="film-text"><span class="film-title">300</span><span class="film-kind">Sound redesign</span></span>
-          </a>
-        </li>
-        <li>
-          <a class="film" href="https://youtu.be/WYqq9zoapXw" target="_blank" rel="noopener"
-             data-video="WYqq9zoapXw" data-slug="dead-space" data-title="Dead Space" data-kind="Game sound redesign" data-time="0:45">
-            <span class="film-thumb"><img src="img/work/dead-space-thumb.webp" width="640" height="360" alt="" loading="lazy" decoding="async"><span class="film-time">0:45</span></span>
-            <span class="film-text"><span class="film-title">Dead Space</span><span class="film-kind">Sound redesign</span></span>
-          </a>
-        </li>
-      </ol>
     </div>
   </section>
 
@@ -346,14 +360,21 @@
         <h2 class="h2" id="about-title">About Deverx Sound Studio</h2>
         <p class="lead">Deverx Sound Studio is a film audio post-production studio founded by Dalel Savarin and Denis Plakhetko. The studio is led by Denis, a sound designer and re-recording mixer.</p>
         <p class="lead">Based in Dallas, Texas, we work remotely with filmmakers and production teams worldwide.</p>
-        <dl class="team">
-          <div><dt>Denis Plakhetko</dt><dd>Founder, sound designer and re-recording mixer</dd></div>
-          <div><dt>Dalel Savarin</dt><dd>Co-founder</dd></div>
-        </dl>
       </div>
-      <figure class="portrait">
-        <img src="img/people/denis-plakhetko.webp" width="642" height="1100" alt="Denis Plakhetko in profile, black and white" loading="lazy" decoding="async">
-      </figure>
+      <div class="founders">
+        <figure class="founder">
+          <div class="founder-photo founder-denis">
+            <img src="img/people/denis-plakhetko-left.webp" width="642" height="1100" alt="Denis Plakhetko, black and white profile portrait" loading="lazy" decoding="async">
+          </div>
+          <figcaption><span class="founder-name">Denis Plakhetko</span><span class="founder-role">Founder, sound designer and re-recording mixer</span></figcaption>
+        </figure>
+        <figure class="founder">
+          <div class="founder-photo founder-dalel">
+            <img src="img/people/dalel-savarin.webp" width="765" height="1100" alt="Dalel Savarin, black and white portrait" loading="lazy" decoding="async">
+          </div>
+          <figcaption><span class="founder-name">Dalel Savarin</span><span class="founder-role">Co-founder</span></figcaption>
+        </figure>
+      </div>
     </div>
   </section>
 

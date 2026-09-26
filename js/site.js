@@ -6,7 +6,6 @@
 
   var root = document.documentElement;
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  var narrow = window.matchMedia('(max-width: 719px)');
 
   function $(sel, ctx) { return (ctx || document).querySelector(sel); }
   function $$(sel, ctx) { return Array.prototype.slice.call((ctx || document).querySelectorAll(sel)); }
@@ -74,6 +73,7 @@
   var EMBED_ORIGIN = 'https://www.youtube-nocookie.com';
 
   var screen = $('[data-screen]');
+  var reel = screen ? screen.closest('.reel') : null;
   var poster = $('[data-poster]');
   var posterImg = $('[data-poster-img]');
   var playLabel = $('.screen-play-label');
@@ -93,6 +93,12 @@
   var wantPlay = false;      // play was asked for before the player was ready
   var playing = false;
   var slowTimer = null;
+
+  function setLive(on) {
+    screen.classList.toggle('is-live', on);
+    if (reel) reel.classList.toggle('is-live', on);
+    updateLights(window.innerHeight);   // right away, not on the next frame
+  }
 
   function embedSrc(id) {
     var q = 'playsinline=1&rel=0&color=white&enablejsapi=1';
@@ -165,7 +171,12 @@
     else if (data.info && typeof data.info.playerState === 'number') state = data.info.playerState;
     if (typeof state !== 'number') return;
     var now = state === 1 || state === 3;   // playing or buffering
-    if (now) screen.classList.add('is-live');
+    if (now && !screen.classList.contains('is-live')) {
+      setLive(true);
+      // started by a tap on the picture: nudge the page so the Close bar shows too
+      var sr = stage.getBoundingClientRect();
+      if (sr.bottom > 0 && sr.top < window.innerHeight) showStage(true);
+    }
     if (now !== playing) { playing = now; requestFrame(); }
   });
 
@@ -203,14 +214,41 @@
     }
   }
 
-  function bringScreenIntoView() {
+  // Close: stop the film, bring the poster back and — where the list sits
+  // below the screen — scroll the films into view to pick the next one.
+  function closeFilm() {
     if (!screen) return;
-    var r = screen.getBoundingClientRect();
-    var top = parseFloat(getComputedStyle(root).getPropertyValue('--header-h')) || 68;
-    if (r.top < top || r.bottom > window.innerHeight) {
-      screen.scrollIntoView({ block: 'center', behavior: reduceMotion.matches ? 'auto' : 'smooth' });
+    command('stopVideo');
+    wantPlay = false;
+    setLive(false);
+    setLoading(false);
+    if (playing) { playing = false; requestFrame(); }
+    if (poster) requestAnimationFrame(function () { poster.focus({ preventScroll: true }); });
+    var list = $('.playlist');
+    if (!list) return;
+    var r = list.getBoundingClientRect();
+    if (r.top > window.innerHeight * 0.8) {
+      window.scrollTo({
+        top: window.scrollY + r.top - window.innerHeight * 0.3,
+        behavior: reduceMotion.matches ? 'auto' : 'smooth'
+      });
     }
   }
+
+  // Centre the picture together with the bar under it, so Close is in view too.
+  var stage = screen ? (screen.closest('.reel-main') || screen) : null;
+  function showStage(onlyIfNeeded) {
+    if (!stage) return;
+    var r = stage.getBoundingClientRect(), vh = window.innerHeight;
+    if (onlyIfNeeded && r.top >= 0 && r.bottom <= vh - 12) return;
+    // Centred in the whole window: the header steps aside while a film plays.
+    var free = vh - r.height;
+    window.scrollTo({
+      top: window.scrollY + r.top - (free > 0 ? free / 2 : 12),
+      behavior: reduceMotion.matches ? 'auto' : 'smooth'
+    });
+  }
+  function bringScreenIntoView() { showStage(true); }
 
   // Plain clicks play on the page; cmd/ctrl/middle-click keep the link.
   function isPlainClick(e) { return !(e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0); }
@@ -234,10 +272,15 @@
         play(current);
       });
     }
+    var closeBtn = $('[data-close]');
+    if (closeBtn) closeBtn.addEventListener('click', closeFilm);
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && screen.classList.contains('is-live') && (!menu || menu.hidden)) closeFilm();
+    });
     $$('[data-watch]').forEach(function (btn) {
       btn.addEventListener('click', function (e) {
         e.preventDefault();
-        screen.scrollIntoView({ block: 'center', behavior: reduceMotion.matches ? 'auto' : 'smooth' });
+        showStage(false);
         if (!playing) play(current);
       });
     });
@@ -246,7 +289,7 @@
         var film = filmById(link.dataset.play);
         if (!film || !isPlainClick(e)) return;
         e.preventDefault();
-        screen.scrollIntoView({ block: 'center', behavior: reduceMotion.matches ? 'auto' : 'smooth' });
+        showStage(false);
         play(film);
       });
     });
@@ -356,6 +399,29 @@
     });
   }
 
+  // A fine comb of lines, like a DAW overview of a whole mix.
+  function comb(a, n) {
+    var d = '';
+    for (var i = 0; i < n; i++) {
+      var t = i / (n - 1) * (a.length - 1), k = Math.floor(t), f = t - k;
+      var v = a[k] * (1 - f) + (a[Math.min(k + 1, a.length - 1)] || 0) * f;
+      v *= 0.72 + 0.28 * Math.abs(Math.sin(i * 12.9898));
+      var x = (i / (n - 1) * 1000).toFixed(1), h = Math.max(1.5, v * 46);
+      d += 'M' + x + ' ' + (50 - h).toFixed(1) + 'V' + (50 + h).toFixed(1);
+    }
+    return d;
+  }
+
+  // The first screen carries the final mix, drawn once as the page opens.
+  var heroWave = $('[data-hero-wave]');
+  if (heroWave) {
+    var hd = comb((stems || buildStems(STEM_SAMPLES)).mix, 280);
+    heroWave.innerHTML =
+      '<svg class="w-dim" viewBox="0 0 1000 100" preserveAspectRatio="none"><path d="' + hd + '"/></svg>' +
+      '<svg class="w-lit" viewBox="0 0 1000 100" preserveAspectRatio="none"><path d="' + hd + '"/></svg>' +
+      '<span class="hero-playhead"></span>';
+  }
+
   var SESSION_SECONDS = 94, FPS = 24;
   function pad(n) { return (n < 10 ? '0' : '') + n; }
   function timecode(p) {
@@ -400,9 +466,8 @@
     if (!screen) return;
     var r = screen.getBoundingClientRect();
     var shown = Math.max(0, Math.min(r.bottom, vh) - Math.max(r.top, 0)) / Math.min(r.height, vh);
-    var centred = Math.abs(r.top + r.height / 2 - vh / 2) < vh * 0.2;
-    var down = menu && !menu.hidden ? false
-      : (playing && shown > 0.55) || (!narrow.matches && centred && shown > 0.85);
+    // The room dims while a film is on the screen; closing it brings the lights back.
+    var down = menu && !menu.hidden ? false : screen.classList.contains('is-live') && shown > 0.5;
     root.classList.toggle('lights-down', down);
   }
 
