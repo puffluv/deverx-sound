@@ -168,11 +168,10 @@ button { font: inherit; color: inherit; }
 .header-bar { height: var(--header-h); display: flex; align-items: center; gap: clamp(16px, 2.4vw, 36px); }
 
 .brand {
-  margin-right: auto;
-  font-size: 1.0625rem; font-weight: 700; font-stretch: 125%;
-  letter-spacing: 0.08em; text-decoration: none;
-  padding-block: 10px;
+  display: block; margin-right: auto; padding-block: 2px;
+  text-decoration: none; -webkit-tap-highlight-color: transparent;
 }
+.brand-logo { display: block; height: 56px; width: auto; }
 
 .nav ul { display: flex; gap: clamp(18px, 2.4vw, 34px); }
 .nav a {
@@ -739,6 +738,7 @@ button { font: inherit; color: inherit; }
 }
 .footer-grid { display: grid; grid-template-columns: minmax(0, 5fr) repeat(3, minmax(0, 2fr)); column-gap: var(--col-gap); row-gap: 32px; }
 .footer-brand p { color: var(--dim); }
+.footer-logo { display: block; width: auto; height: 96px; margin: 0 0 18px -6px; }
 .footer-brand .footer-name { color: var(--ivory); font-weight: 650; font-stretch: 110%; font-size: 1.0625rem; margin-bottom: 6px; }
 .footer-col li + li { margin-top: 6px; }
 .footer-col a { color: var(--ivory-2); text-decoration: none; transition: color 0.2s; }
@@ -840,6 +840,7 @@ button { font: inherit; color: inherit; }
 
 @media (max-width: 719px) {
   :root { --header-h: 60px; }
+  .brand-logo { height: 46px; }
   .hero-wave { display: none; }
   .hero-title { font-size: min(18.5vw, 6.4rem); line-height: 0.9; }
   .hero-title .w { display: block; width: fit-content; }
